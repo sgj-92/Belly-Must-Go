@@ -86,7 +86,7 @@ and saves to the browser only. Open `index.html` via any static server
 5. **Project settings → Your apps → Web (`</>`)**: register an app and copy the `firebaseConfig` object.
 6. Paste it into `FIREBASE_CONFIG` at the top of the script in `index.html`, then commit.
 7. Host it on **Vercel** (same as the other apps): import the repo with no framework preset and no build;
-   `vercel.json` serves the root folder. Production is `https://belly.sgj.luxe`.
+   `vercel.json` serves the root folder. Production is `https://bmg.sgj.luxe`.
 8. Share the link in the group chat. On iPhone: Share → **Add to Home Screen**.
 
 Once live, the app creates the group with a 10,000-step goal and a campaign starting today.
