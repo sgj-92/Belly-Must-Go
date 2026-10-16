@@ -1,0 +1,1563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Belly Must Go</title>
+<meta name="description" content="Weight-loss and step-count leaderboard for the Belly Must Go padel crew.">
+<meta name="theme-color" content="#0b0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Belly Must Go">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme: dark;
+    --bg: #0b0f14;
+    --surface: #131a22;
+    --surface-2: #1a232e;
+    --surface-3: #222d3a;
+    --border: rgba(222, 232, 245, 0.08);
+    --border-strong: rgba(222, 232, 245, 0.16);
+    --text: #eef2f6;
+    --text-dim: #a3afbc;
+    --text-faint: #6f7c8a;
+
+    --accent: #c8f031;          /* padel-ball lime */
+    --accent-ink: #11160a;
+    --accent-dim: rgba(200, 240, 49, 0.12);
+
+    --good: #3ccf8e;            /* weight down / goal hit */
+    --good-dim: rgba(60, 207, 142, 0.12);
+    --bad: #ff6b5e;             /* weight up */
+    --bad-dim: rgba(255, 107, 94, 0.12);
+    --gold: #f5c451;
+    --silver: #c9d1da;
+    --bronze: #d79a62;
+
+    /* chart series (validated on --surface, dark) */
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-muted: rgba(163, 175, 188, 0.28);
+
+    --radius: 18px;
+    --radius-sm: 12px;
+    --tabbar-h: 64px;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-t: env(safe-area-inset-top, 0px);
+  }
+
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html{ background: var(--bg); }
+  body{
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(900px 500px at 10% -10%, rgba(200,240,49,0.07), transparent 60%),
+      radial-gradient(700px 420px at 110% 0%, rgba(57,135,229,0.08), transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + 24px);
+    overflow-x: hidden;
+  }
+  h1,h2,h3{ font-family: 'Outfit', system-ui, sans-serif; margin: 0; letter-spacing: -0.01em; }
+  button{ font: inherit; color: inherit; }
+  .num{ font-variant-numeric: tabular-nums; }
+  .wrap{ max-width: 640px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: calc(14px + var(--safe-t)) 0 10px;
+  }
+  .brand{ display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brand .ball{
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    background: radial-gradient(circle at 32% 30%, #f1ffb0, var(--accent) 55%, #8aa61c 100%);
+    box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), 0 2px 10px rgba(200,240,49,0.35);
+    position: relative; overflow: hidden;
+  }
+  .brand .ball::after{
+    content: ""; position: absolute; inset: -2px 9px; border: 2px solid rgba(255,255,255,0.75);
+    border-top: 0; border-bottom: 0; border-radius: 50%;
+  }
+  .brand h1{ font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap; }
+  .brand h1 span{ color: var(--accent); }
+  .pill{
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--border-strong);
+    font-size: 0.78rem; font-weight: 600; color: var(--text-dim); white-space: nowrap;
+  }
+  .pill .dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+  .pill.demo .dot{ background: var(--gold); }
+
+  .banner{
+    margin: 4px 0 12px; padding: 10px 14px; border-radius: var(--radius-sm);
+    background: rgba(245,196,81,0.08); border: 1px solid rgba(245,196,81,0.25);
+    color: #f3dca0; font-size: 0.82rem; display: flex; gap: 10px; align-items: center; justify-content: space-between;
+  }
+  .banner button{ background: none; border: 1px solid rgba(245,196,81,0.4); color: #f3dca0; border-radius: 999px; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+
+  /* ---------- cards ---------- */
+  .card{
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
+  }
+  .card-h{ display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+  .card-h h2{ font-size: 1.05rem; font-weight: 700; }
+  .card-h .meta{ font-size: 0.78rem; color: var(--text-faint); }
+  .link{ background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; font-size: 0.82rem; cursor: pointer; }
+  .eyebrow{ font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); }
+  .empty{ color: var(--text-faint); font-size: 0.88rem; text-align: center; padding: 18px 8px; margin: 0; }
+
+  /* season strip */
+  .season{ display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 2px 0 14px; }
+  .season::-webkit-scrollbar{ display: none; }
+  .season .pill{ background: transparent; }
+
+  /* hero */
+  .hero{
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, #18230d 0%, #121a12 45%, var(--surface) 100%);
+    border-color: rgba(200,240,49,0.18);
+  }
+  .hero-row{ display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .hero .big{ font-family: 'Outfit'; font-weight: 900; font-size: 2.6rem; line-height: 1; color: var(--accent); letter-spacing: -0.02em; }
+  .hero .cap{ color: var(--text-dim); font-size: 0.85rem; margin-top: 6px; }
+  .hero-stats{ display: flex; gap: 18px; }
+  .hero-stats div{ text-align: right; }
+  .hero-stats b{ display: block; font-family: 'Outfit'; font-size: 1.3rem; font-weight: 800; }
+  .hero-stats span{ font-size: 0.72rem; color: var(--text-faint); }
+
+  /* my card */
+  .me-top{ display: flex; align-items: center; gap: 12px; }
+  .av{
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    display: grid; place-items: center; font-size: 1.3rem;
+    background: var(--surface-3); border: 1px solid var(--border-strong);
+  }
+  .av.lg{ width: 54px; height: 54px; font-size: 1.8rem; }
+  .av.sm{ width: 32px; height: 32px; font-size: 1.05rem; }
+  .me-name{ font-family: 'Outfit'; font-weight: 800; font-size: 1.2rem; }
+  .me-sub{ color: var(--text-dim); font-size: 0.82rem; }
+  .stat-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+  .stat{ background: var(--surface-2); border-radius: var(--radius-sm); padding: 10px 12px; min-width: 0; }
+  .stat b{ display: block; font-family: 'Outfit'; font-size: 1.15rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat span{ font-size: 0.72rem; color: var(--text-faint); }
+  .nudge{
+    margin-top: 12px; padding: 10px 12px; border-radius: var(--radius-sm);
+    background: var(--accent-dim); color: #e4f7a6; font-size: 0.85rem;
+  }
+  .btn-row{ display: flex; gap: 8px; margin-top: 14px; }
+  .btn{
+    flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 46px; padding: 10px 16px; border-radius: 14px; cursor: pointer;
+    background: var(--surface-3); border: 1px solid var(--border-strong);
+    font-weight: 700; font-size: 0.92rem;
+  }
+  .btn.primary{ background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .btn.danger{ background: var(--bad-dim); color: var(--bad); border-color: rgba(255,107,94,0.3); }
+  .btn:active{ transform: scale(0.98); }
+  .btn[disabled]{ opacity: 0.5; cursor: default; }
+
+  /* progress */
+  .bar{ height: 8px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+  .bar i{ display: block; height: 100%; border-radius: 999px; background: var(--series-1); transition: width .4s ease; }
+  .bar.hit i{ background: var(--good); }
+
+  /* tone */
+  .good{ color: var(--good); }
+  .bad{ color: var(--bad); }
+  .faint{ color: var(--text-faint); }
+
+  /* awards */
+  .awards{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .award{ border-radius: var(--radius-sm); padding: 12px; background: var(--surface-2); min-width: 0; border: 1px solid transparent; cursor: pointer; text-align: left; }
+  .award.win{ background: linear-gradient(160deg, rgba(245,196,81,0.16), rgba(245,196,81,0.03)); border-color: rgba(245,196,81,0.25); }
+  .award.shame{ background: linear-gradient(160deg, rgba(255,107,94,0.14), rgba(255,107,94,0.03)); border-color: rgba(255,107,94,0.22); }
+  .award .t{ font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
+  .award .n{ font-family: 'Outfit'; font-weight: 800; font-size: 1.05rem; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .award .v{ font-size: 0.82rem; margin-top: 2px; }
+
+  /* leaderboard rows */
+  .rows{ display: flex; flex-direction: column; gap: 6px; }
+  .row{
+    display: grid; grid-template-columns: 28px 36px 1fr auto; align-items: center; gap: 10px;
+    width: 100%; padding: 10px 10px 10px 8px; border-radius: 14px; text-align: left;
+    background: var(--surface-2); border: 1px solid transparent; cursor: pointer;
+  }
+  .row.me{ border-color: rgba(200,240,49,0.35); background: linear-gradient(90deg, rgba(200,240,49,0.07), var(--surface-2) 60%); }
+  .row .rk{ font-family: 'Outfit'; font-weight: 800; font-size: 1rem; text-align: center; color: var(--text-dim); }
+  .row .rk.r1{ color: var(--gold); } .row .rk.r2{ color: var(--silver); } .row .rk.r3{ color: var(--bronze); }
+  .row .av{ width: 36px; height: 36px; font-size: 1.15rem; }
+  .row .who{ min-width: 0; }
+  .row .nm{ font-weight: 700; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .sub{ display: block; font-size: 0.76rem; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .sub .bar{ margin-top: 6px; height: 6px; }
+  .row .val{ text-align: right; white-space: nowrap; }
+  .row .val b{ display: block; font-family: 'Outfit'; font-weight: 800; font-size: 1.05rem; }
+  .row .val small{ font-size: 0.74rem; color: var(--text-faint); }
+  .mv{ font-size: 0.68rem; font-weight: 700; padding: 1px 5px; border-radius: 6px; }
+  .mv.up{ color: var(--good); background: var(--good-dim); }
+  .mv.down{ color: var(--bad); background: var(--bad-dim); }
+  .mv.new{ color: var(--text-dim); background: var(--surface-3); }
+  .tag{ font-size: 0.66rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; background: var(--accent-dim); color: var(--accent); }
+
+  /* podium */
+  .podium{ display: grid; grid-template-columns: 1fr 1.15fr 1fr; align-items: end; gap: 8px; margin: 4px 0 12px; }
+  .pod{ text-align: center; cursor: pointer; background: none; border: 0; padding: 0; min-width: 0; }
+  .pod .av{ margin: 0 auto 6px; width: 46px; height: 46px; font-size: 1.5rem; }
+  .pod.p1 .av{ width: 58px; height: 58px; font-size: 1.9rem; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245,196,81,0.2); }
+  .pod .nm{ font-weight: 700; font-size: 0.86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pod .pv{ font-family: 'Outfit'; font-weight: 800; font-size: 0.95rem; }
+  .pod .step{ margin-top: 8px; border-radius: 12px 12px 4px 4px; display: grid; place-items: center; font-family: 'Outfit'; font-weight: 900; font-size: 1.3rem; }
+  .pod.p1 .step{ height: 74px; background: linear-gradient(180deg, rgba(245,196,81,0.35), rgba(245,196,81,0.08)); color: var(--gold); }
+  .pod.p2 .step{ height: 54px; background: linear-gradient(180deg, rgba(201,209,218,0.25), rgba(201,209,218,0.05)); color: var(--silver); }
+  .pod.p3 .step{ height: 40px; background: linear-gradient(180deg, rgba(215,154,98,0.28), rgba(215,154,98,0.06)); color: var(--bronze); }
+
+  /* chips */
+  .chips{ display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 12px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+  .chips::-webkit-scrollbar{ display: none; }
+  .chip{
+    flex-shrink: 0; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border-strong);
+    font-weight: 600; font-size: 0.84rem; color: var(--text-dim);
+  }
+  .chip.on{ background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+  .seg{ display: inline-flex; background: var(--surface-2); border-radius: 12px; padding: 3px; gap: 2px; }
+  .seg button{ border: 0; background: none; padding: 6px 12px; border-radius: 9px; font-size: 0.8rem; font-weight: 600; color: var(--text-dim); cursor: pointer; }
+  .seg button.on{ background: var(--surface-3); color: var(--text); }
+
+  /* feed */
+  .feed{ display: flex; flex-direction: column; }
+  .ev{ display: grid; grid-template-columns: 32px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+  .ev:first-child{ border-top: 0; padding-top: 0; }
+  .ev .tx{ font-size: 0.88rem; color: var(--text-dim); }
+  .ev .tx b{ color: var(--text); font-weight: 700; }
+  .ev .tx b.good{ color: var(--good); } .ev .tx b.bad{ color: var(--bad); }
+  .ev .when{ font-size: 0.72rem; color: var(--text-faint); margin-top: 2px; }
+  .ev .tags{ display: inline-flex; gap: 4px; flex-wrap: wrap; margin-left: 4px; }
+
+  /* step race */
+  .race{ display: flex; flex-direction: column; gap: 10px; }
+  .race-row{ display: grid; grid-template-columns: 32px 1fr auto; gap: 10px; align-items: center; cursor: pointer; background: none; border: 0; padding: 0; text-align: left; width: 100%; }
+  .race-row .top{ display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 5px; gap: 8px; }
+  .race-row .top span:first-child{ font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .race-row .top span:last-child{ color: var(--text-dim); }
+  .race-row .ok{ font-size: 1rem; width: 20px; text-align: center; }
+
+  /* dodgers */
+  .dodgers{ display: flex; flex-wrap: wrap; gap: 8px; }
+  .dodger{ display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; background: var(--surface-2); font-size: 0.84rem; cursor: pointer; border: 0; }
+  .dodger .av{ width: 26px; height: 26px; font-size: 0.9rem; }
+  .dodger small{ color: var(--bad); font-weight: 600; }
+
+  /* chart */
+  .chart{ position: relative; width: 100%; touch-action: pan-y; }
+  .chart svg{ display: block; width: 100%; overflow: visible; }
+  .chart .axis text{ fill: var(--text-faint); font-size: 10.5px; font-family: Inter, sans-serif; }
+  .chart .grid line{ stroke: rgba(222,232,245,0.07); }
+  .chart .zero{ stroke: rgba(222,232,245,0.25); stroke-dasharray: 3 3; }
+  .chart .lbl{ font-size: 11px; font-weight: 700; font-family: Inter, sans-serif; fill: var(--text); }
+  .chart .lbl-sub{ font-size: 10.5px; fill: var(--text-dim); font-family: Inter, sans-serif; }
+  .tip{
+    position: absolute; top: 0; pointer-events: none; z-index: 5;
+    background: rgba(10,14,19,0.96); border: 1px solid var(--border-strong); border-radius: 10px;
+    padding: 8px 10px; font-size: 0.76rem; min-width: 130px; max-width: 220px;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.7); display: none;
+  }
+  .tip .d{ color: var(--text-faint); font-size: 0.7rem; margin-bottom: 4px; }
+  .tip .r{ display: grid; grid-template-columns: 12px 1fr auto; gap: 6px; align-items: center; line-height: 1.6; }
+  .tip .r i{ display: block; height: 2px; border-radius: 2px; }
+  .tip .r span{ color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tip .r b{ font-weight: 700; }
+  .legend{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .legend button{
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; cursor: pointer;
+    background: var(--surface-2); border: 1px solid transparent; font-size: 0.78rem; color: var(--text-dim);
+  }
+  .legend button i{ width: 14px; height: 2px; border-radius: 2px; background: var(--series-muted); }
+  .legend button.me{ color: var(--text); } .legend button.me i{ background: var(--series-1); }
+  .legend button.cmp{ color: var(--text); border-color: rgba(217,89,38,0.5); } .legend button.cmp i{ background: var(--series-2); }
+  table.data{ width: 100%; border-collapse: collapse; font-size: 0.84rem; margin-top: 10px; }
+  table.data th, table.data td{ padding: 7px 6px; text-align: right; border-bottom: 1px solid var(--border); }
+  table.data th:first-child, table.data td:first-child{ text-align: left; }
+  table.data th{ color: var(--text-faint); font-weight: 600; font-size: 0.74rem; }
+
+  /* history list */
+  .hist{ display: flex; flex-direction: column; }
+  .hrow{ display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--border); }
+  .hrow:first-child{ border-top: 0; }
+  .hrow .l{ font-size: 0.88rem; } .hrow .l small{ display: block; color: var(--text-faint); font-size: 0.74rem; }
+  .hrow .r{ display: flex; align-items: center; gap: 4px; }
+  .icon-btn{ background: none; border: 0; color: var(--text-faint); padding: 8px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; }
+  .icon-btn:hover{ background: var(--surface-3); color: var(--text); }
+
+  /* settings list */
+  .set{ display: flex; flex-direction: column; }
+  .set-row{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); background: none; border-left: 0; border-right: 0; border-bottom: 0; width: 100%; text-align: left; cursor: pointer; }
+  .set-row:first-child{ border-top: 0; }
+  .set-row .k{ font-weight: 600; } .set-row .k small{ display: block; font-weight: 400; color: var(--text-faint); font-size: 0.76rem; }
+  .set-row .v{ color: var(--text-dim); font-size: 0.85rem; white-space: nowrap; }
+
+  /* tab bar */
+  .tabbar{
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    height: calc(var(--tabbar-h) + var(--safe-b)); padding-bottom: var(--safe-b);
+    background: rgba(11,15,20,0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: center;
+  }
+  .tabbar-in{ display: grid; grid-template-columns: repeat(5, 1fr); width: 100%; max-width: 640px; }
+  .tab{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: 0; color: var(--text-faint); font-size: 0.68rem; font-weight: 600; cursor: pointer; }
+  .tab svg{ width: 22px; height: 22px; }
+  .tab.on{ color: var(--accent); }
+  .tab.log{ color: var(--accent-ink); }
+  .tab.log span.plus{
+    width: 46px; height: 46px; border-radius: 16px; background: var(--accent); display: grid; place-items: center;
+    box-shadow: 0 6px 20px -6px rgba(200,240,49,0.6);
+  }
+  .tab.log span.plus svg{ width: 24px; height: 24px; }
+
+  /* sheet */
+  dialog.sheet{
+    border: 0; padding: 0; margin: auto auto 0; width: 100%; max-width: 560px;
+    max-height: 92vh; background: var(--surface); color: var(--text);
+    border-radius: 22px 22px 0 0; border-top: 1px solid var(--border-strong);
+  }
+  dialog.sheet::backdrop{ background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
+  dialog.sheet[open]{ animation: up .22s ease-out; }
+  @keyframes up{ from{ transform: translateY(40px); opacity: 0; } to{ transform: none; opacity: 1; } }
+  @media (min-width: 640px){ dialog.sheet{ margin: auto; border-radius: 22px; border: 1px solid var(--border-strong); } }
+  .sheet-in{ padding: 10px 18px calc(22px + var(--safe-b)); overflow-y: auto; max-height: 92vh; }
+  .grab{ width: 40px; height: 4px; border-radius: 4px; background: var(--border-strong); margin: 0 auto 14px; }
+  .sheet-in h2{ font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+  .sheet-in .lead{ color: var(--text-dim); font-size: 0.88rem; margin: 0 0 16px; }
+
+  /* forms */
+  .field{ margin-bottom: 14px; }
+  .field > label, .field > .lab{ display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; }
+  .field .hint{ font-size: 0.74rem; color: var(--text-faint); margin-top: 5px; }
+  input[type=text], input[type=number], input[type=date], input[type=password], input[type=tel]{
+    width: 100%; min-height: 48px; padding: 10px 14px; border-radius: 12px;
+    background: var(--surface-2); border: 1px solid var(--border-strong); color: var(--text);
+    font: inherit; font-size: 16px; outline: none;
+  }
+  input:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  input.big{ font-family: 'Outfit'; font-size: 1.8rem; font-weight: 800; text-align: center; min-height: 64px; }
+  .unit-in{ position: relative; flex: 1; }
+  .unit-in em{ position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-style: normal; font-weight: 600; pointer-events: none; }
+  .two{ display: flex; gap: 8px; }
+  .emojis{ display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+  .emojis label{ display: grid; place-items: center; aspect-ratio: 1; border-radius: 12px; background: var(--surface-2); font-size: 1.3rem; cursor: pointer; border: 2px solid transparent; }
+  .emojis input{ position: absolute; opacity: 0; pointer-events: none; }
+  .emojis input:checked + span{ outline: none; }
+  .emojis label:has(input:checked){ border-color: var(--accent); background: var(--accent-dim); }
+  .field > label.toggle, .toggle{ display: flex; margin: 0; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); cursor: pointer; }
+  .toggle .k{ font-size: 0.9rem; font-weight: 600; } .toggle .k small{ display: block; font-weight: 400; color: var(--text-faint); font-size: 0.74rem; }
+  .toggle input{ appearance: none; width: 46px; height: 28px; border-radius: 999px; background: var(--surface-3); position: relative; flex-shrink: 0; cursor: pointer; transition: background .2s; border: 1px solid var(--border-strong); }
+  .toggle input::after{ content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--text-dim); transition: transform .2s, background .2s; }
+  .toggle input:checked{ background: var(--accent); }
+  .toggle input:checked::after{ transform: translateX(18px); background: var(--accent-ink); }
+  .who-list{ display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .who-btn{ display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--surface-2); border: 1px solid transparent; cursor: pointer; text-align: left; width: 100%; font-weight: 600; }
+  .who-btn small{ margin-left: auto; color: var(--text-faint); font-weight: 500; }
+  .choice{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .choice button{ padding: 20px 12px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--border-strong); cursor: pointer; font-weight: 700; font-size: 1rem; }
+  .choice button span{ display: block; font-size: 2rem; margin-bottom: 6px; }
+  .err{ color: var(--bad); font-size: 0.82rem; margin: -4px 0 12px; min-height: 1em; }
+  .rules{ margin: 0; padding: 0; list-style: none; }
+  .rules li{ display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 0.9rem; }
+  .rules li:first-child{ border-top: 0; }
+  .rules li b{ color: var(--accent); white-space: nowrap; }
+
+  /* toast */
+  .toast{
+    position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + var(--safe-b) + 16px); z-index: 60;
+    transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px;
+    font-weight: 600; font-size: 0.88rem; max-width: calc(100vw - 32px); text-align: center;
+    transition: opacity .2s, transform .2s;
+  }
+  .toast.on{ opacity: 1; transform: translate(-50%, 0); }
+
+  .loading{ display: grid; place-items: center; padding: 80px 0; color: var(--text-faint); }
+  .footer{ text-align: center; color: var(--text-faint); font-size: 0.72rem; margin-top: 18px; }
+
+  @media (max-width: 380px){
+    .stat-grid{ grid-template-columns: 1fr 1fr; }
+    .hero .big{ font-size: 2.2rem; }
+  }
+  @media (prefers-reduced-motion: reduce){ *{ animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><div class="ball" aria-hidden="true"></div><h1>Belly <span>Must Go</span></h1></div>
+    <span class="pill" id="modePill"><span class="dot"></span><span id="modeText">Connecting…</span></span>
+  </header>
+  <div id="banner"></div>
+  <main id="view"><div class="loading">Warming up…</div></main>
+</div>
+
+<nav class="tabbar" aria-label="Main">
+  <div class="tabbar-in">
+    <button class="tab" data-route="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+    <button class="tab" data-route="boards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21V11H3v10zM15.5 21V4h-7v17zM21 21v-7h-5.5v7z"/></svg>Boards</button>
+    <button class="tab log" data-act="log" aria-label="Log weight or steps"><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+    <button class="tab" data-route="trends"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Trends</button>
+    <button class="tab" data-route="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</button>
+  </div>
+</nav>
+
+<dialog class="sheet" id="sheet"><div class="sheet-in"><div class="grab"></div><div id="sheetBody"></div></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+/* ======================================================================
+   CONFIG
+   Paste your Firebase web-app config below to go live (see README.md).
+   While apiKey is empty the app runs in DEMO MODE: sample data, stored
+   only in this browser.
+   ====================================================================== */
+const FIREBASE_CONFIG = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
+const GROUP_ID = "belly-must-go";
+const LIVE = !!FIREBASE_CONFIG.apiKey;
+const FIREBASE_VERSION = "10.7.1";
+
+const EMOJIS = ["🦍","🐻","🦁","🐯","🦊","🐺","🐗","🐼","🦏","🐘","🦈","🐊","🦅","🐙","🦖","🐝","🍑","🌶️","🔥","⚡","🎾","💪","👑","🚀"];
+const KG_PER_LB = 0.45359237;
+const POINTS = { perPct: 10, perGoalDay: 1, perWeighWeek: 3, perWeeklyWin: 5 };
+
+/* ---------------------------------------------------------------------
+   Small utilities
+   --------------------------------------------------------------------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pad = n => String(n).padStart(2, "0");
+const toStr = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const today = () => toStr(new Date());
+const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return toStr(d); };
+const dayDiff = (a, b) => Math.round((parse(b) - parse(a)) / 864e5);   // b − a in days
+const dayNum = s => dayDiff("2000-01-01", s);
+const weekStart = s => { const d = parse(s); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return toStr(d); };
+const fmtDate = s => parse(s).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+const relDay = s => {
+  const n = dayDiff(s, today());
+  if (n === 0) return "Today";
+  if (n === 1) return "Yesterday";
+  if (n > 1 && n < 7) return parse(s).toLocaleDateString("en-GB", { weekday: "long" });
+  return fmtDate(s);
+};
+const fmtInt = n => Math.round(n).toLocaleString("en-GB");
+const fmtK = n => n >= 1000 ? (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "k" : String(n);
+const round = (n, dp = 2) => Math.round(n * 10 ** dp) / 10 ** dp;
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2)).replace(/-/g, "").slice(0, 10);
+
+const prefs = {
+  get(k, d) { try { const v = localStorage.getItem("bmg." + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("bmg." + k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem("bmg." + k); } catch {} }
+};
+const ME_KEY = LIVE ? "me.live" : "me.demo";
+let unit = prefs.get("unit", "kg");          // "kg" | "st" | "lb"
+let meId = prefs.get(ME_KEY, null);
+let spectator = false;
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* ---------------------------------------------------------------------
+   Weight formatting (always stored in kg)
+   --------------------------------------------------------------------- */
+function fmtWeight(kg, u = unit) {
+  if (kg == null) return "—";
+  if (u === "kg") return `${kg.toFixed(1)} kg`;
+  const lb = kg / KG_PER_LB;
+  if (u === "lb") return `${lb.toFixed(1)} lb`;
+  let st = Math.floor(lb / 14), rem = Math.round((lb - st * 14) * 10) / 10;
+  if (rem >= 14) { st++; rem -= 14; }
+  return `${st}st ${rem.toFixed(1)}lb`;
+}
+function fmtDelta(kg, u = unit) {
+  if (kg == null) return "—";
+  const sign = kg < -0.004 ? "−" : kg > 0.004 ? "+" : "±";
+  const a = Math.abs(kg);
+  if (u === "kg") return `${sign}${a.toFixed(1)} kg`;
+  const lb = a / KG_PER_LB;
+  if (u === "lb" || lb < 14) return `${sign}${lb.toFixed(1)} lb`;
+  const st = Math.floor(lb / 14);
+  return `${sign}${st}st ${Math.round(lb - st * 14)}lb`;
+}
+const fmtPct = p => p == null ? "—" : `${p < -0.004 ? "−" : p > 0.004 ? "+" : "±"}${Math.abs(p).toFixed(1)}%`;
+const tone = v => v == null ? "" : v < -0.004 ? "good" : v > 0.004 ? "bad" : "";
+
+function weightInput(name, kg) {
+  if (unit === "st") {
+    const lb = kg != null ? kg / KG_PER_LB : null;
+    const st = lb != null ? Math.floor(lb / 14) : "";
+    const rem = lb != null ? round(lb - st * 14, 1) : "";
+    return `<div class="two">
+      <div class="unit-in"><input type="number" inputmode="numeric" step="1" min="3" max="55" name="${name}_st" value="${st}" placeholder="st"><em>st</em></div>
+      <div class="unit-in"><input type="number" inputmode="decimal" step="0.1" min="0" max="13.9" name="${name}_lb" value="${rem}" placeholder="lb"><em>lb</em></div>
+    </div>`;
+  }
+  const v = kg == null ? "" : unit === "kg" ? round(kg, 1) : round(kg / KG_PER_LB, 1);
+  return `<div class="unit-in"><input type="number" inputmode="decimal" step="0.1" name="${name}" value="${v}" placeholder="0.0"><em>${unit}</em></div>`;
+}
+function readWeight(form, name) {
+  if (unit === "st") {
+    const st = parseFloat(form[`${name}_st`].value), lb = parseFloat(form[`${name}_lb`].value || "0");
+    if (isNaN(st)) return null;
+    return round((st * 14 + (isNaN(lb) ? 0 : lb)) * KG_PER_LB, 2);
+  }
+  const v = parseFloat(form[name].value);
+  if (isNaN(v)) return null;
+  return round(unit === "kg" ? v : v * KG_PER_LB, 2);
+}
+
+/* ---------------------------------------------------------------------
+   State + stores
+   --------------------------------------------------------------------- */
+const state = { group: null, players: [], weighins: [], steps: [], ready: false };
+const defaultGroup = () => ({ name: "Belly Must Go", stepGoal: 10000, startDate: today() });
+let store;
+
+/* ---- Demo store: localStorage, seeded with sample players ---- */
+function makeDemoStore(onChange) {
+  const KEY = "bmg.demo.v1";
+  let data;
+  try { data = JSON.parse(localStorage.getItem(KEY)); } catch {}
+  if (!data || !data.group) data = seedDemo();
+  const persist = () => { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch {} };
+  const publish = () => {
+    state.group = { ...data.group };
+    state.players = data.players.map(p => ({ ...p }));
+    state.weighins = data.weighins.map(e => ({ ...e }));
+    state.steps = data.steps.map(e => ({ ...e }));
+    state.ready = true;
+    onChange();
+  };
+  const upsert = (arr, item) => { const i = arr.findIndex(x => x.id === item.id); i >= 0 ? arr[i] = item : arr.push(item); };
+  persist(); queueMicrotask(publish);
+  const write = fn => { fn(); persist(); publish(); return Promise.resolve(); };
+  return {
+    savePlayer: p => write(() => upsert(data.players, p)),
+    saveGroup: patch => write(() => Object.assign(data.group, patch)),
+    saveWeighin: e => write(() => upsert(data.weighins, e)),
+    deleteWeighin: id => write(() => { data.weighins = data.weighins.filter(x => x.id !== id); }),
+    saveSteps: e => write(() => upsert(data.steps, e)),
+    deleteSteps: id => write(() => { data.steps = data.steps.filter(x => x.id !== id); }),
+    reset: () => { try { localStorage.removeItem(KEY); } catch {} data = seedDemo(); persist(); publish(); }
+  };
+}
+
+function seedDemo() {
+  let s = 20261016;
+  const rnd = () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const start = addDays(today(), -41);
+  const cast = [
+    { name: "Big Dave", emoji: "🦍", kg: 124, rate: -0.95, target: 105, show: false, steps: 8200 },
+    { name: "Robbo", emoji: "🐗", kg: 98, rate: -0.7, target: 88, show: true, steps: 11800 },
+    { name: "Dani", emoji: "🦊", kg: 76, rate: -0.45, target: 70, show: false, steps: 13400 },
+    { name: "Jonno", emoji: "🐻", kg: 109, rate: 0.12, target: 95, show: true, steps: 7100 },
+    { name: "Priya", emoji: "🔥", kg: 68, rate: -0.38, target: null, show: false, steps: 12100 },
+    { name: "Gaz", emoji: "🦈", kg: 133, rate: -1.1, target: 110, show: false, steps: 9600 }
+  ];
+  const players = [], weighins = [], steps = [];
+  cast.forEach((c, i) => {
+    const id = "demo" + i;
+    players.push({ id, name: c.name, emoji: c.emoji, targetKg: c.target, showWeight: c.show, pinHash: null, created: start, ts: Date.now() });
+    let kg = c.kg;
+    for (let d = 0; d <= 41; d++) {
+      const date = addDays(start, d);
+      kg += c.rate / 7 + (rnd() - 0.5) * 0.35;
+      const weighs = d === 0 || (i === 3 ? rnd() < 0.12 : rnd() < 0.32);
+      if (weighs && !(i === 3 && d > 30)) weighins.push({ id: `${id}_${date}`, pid: id, date, kg: round(kg, 1), ts: Date.now() - (41 - d) * 864e5 });
+      if (rnd() < 0.86 || d > 38) {
+        const n = Math.max(1500, Math.round(c.steps + (rnd() - 0.45) * 7000 + (rnd() < 0.05 ? 9000 : 0)));
+        if (!(d === 41 && rnd() < 0.4)) steps.push({ id: `${id}_${date}`, pid: id, date, steps: d === 41 ? Math.round(n * 0.6) : n, ts: Date.now() - (41 - d) * 864e5 });
+      }
+    }
+  });
+  return { group: { name: "Belly Must Go", stepGoal: 10000, startDate: start }, players, weighins, steps };
+}
+
+/* ---- Live store: Firestore with anonymous auth ---- */
+async function makeFirestoreStore(onChange) {
+  const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}`;
+  const [{ initializeApp }, fs, { getAuth, signInAnonymously }] = await Promise.all([
+    import(`${base}/firebase-app.js`), import(`${base}/firebase-firestore.js`), import(`${base}/firebase-auth.js`)
+  ]);
+  const { getFirestore, doc, collection, onSnapshot, setDoc, deleteDoc } = fs;
+  const app = initializeApp(FIREBASE_CONFIG);
+  const db = getFirestore(app);
+  await signInAnonymously(getAuth(app));
+
+  const gref = doc(db, "groups", GROUP_ID);
+  const loaded = { group: false, players: false, weighins: false, steps: false };
+  const check = () => { state.ready = Object.values(loaded).every(Boolean); onChange(); };
+  const onErr = err => { console.error(err); toast("Couldn't reach the database — check your connection"); };
+
+  onSnapshot(gref, snap => {
+    if (!snap.exists()) { setDoc(gref, defaultGroup()).catch(onErr); return; }
+    state.group = snap.data(); loaded.group = true; check();
+  }, onErr);
+  for (const col of ["players", "weighins", "steps"]) {
+    onSnapshot(collection(gref, col), qs => {
+      state[col] = qs.docs.map(d => ({ id: d.id, ...d.data() }));
+      loaded[col] = true; check();
+    }, onErr);
+  }
+  const clean = ({ id, ...rest }) => rest;
+  return {
+    savePlayer: p => setDoc(doc(gref, "players", p.id), clean(p)),
+    saveGroup: patch => setDoc(gref, patch, { merge: true }),
+    saveWeighin: e => setDoc(doc(gref, "weighins", e.id), clean(e)),
+    deleteWeighin: id => deleteDoc(doc(gref, "weighins", id)),
+    saveSteps: e => setDoc(doc(gref, "steps", e.id), clean(e)),
+    deleteSteps: id => deleteDoc(doc(gref, "steps", id))
+  };
+}
+
+/* ---------------------------------------------------------------------
+   Competition engine — everything is derived from the raw entries.
+   Only entries inside the season (startDate → asOf) count.
+   --------------------------------------------------------------------- */
+function weekChange(w, wk) {
+  const end = addDays(wk, 7);
+  const inWeek = w.filter(e => e.date >= wk && e.date < end);
+  if (!inWeek.length) return null;
+  const before = w.filter(e => e.date < wk);
+  const ref = before.length ? before[before.length - 1] : inWeek[0];
+  const cur = inWeek[inWeek.length - 1];
+  if (ref === cur) return null;
+  return { kg: cur.kg - ref.kg, pct: (cur.kg - ref.kg) / ref.kg * 100 };
+}
+
+function compute(asOf = today()) {
+  const g = state.group, start = g.startDate, goal = g.stepGoal;
+  const thisWk = weekStart(asOf);
+  const raw = {};
+  for (const p of state.players) raw[p.id] = { w: [], s: new Map() };
+  for (const e of state.weighins) if (raw[e.pid] && e.date >= start && e.date <= asOf) raw[e.pid].w.push(e);
+  for (const e of state.steps) if (raw[e.pid] && e.date >= start && e.date <= asOf) raw[e.pid].s.set(e.date, e.steps);
+  for (const id in raw) raw[id].w.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+
+  // Completed weeks → Biggest Loser / Biggest Gainer awards
+  const weeks = [];
+  let n = 1;
+  for (let wk = weekStart(start); addDays(wk, 6) < asOf; wk = addDays(wk, 7), n++) {
+    const changes = state.players.map(p => ({ pid: p.id, ch: weekChange(raw[p.id].w, wk) })).filter(x => x.ch);
+    const best = Math.min(...changes.map(c => c.ch.pct)), worst = Math.max(...changes.map(c => c.ch.pct));
+    weeks.push({
+      wk, n, changes,
+      winners: best < 0 ? changes.filter(c => c.ch.pct === best) : [],
+      gainers: worst > 0 ? changes.filter(c => c.ch.pct === worst) : []
+    });
+  }
+  const wins = {};
+  for (const w of weeks) for (const c of w.winners) wins[c.pid] = (wins[c.pid] || 0) + 1;
+
+  const stats = {};
+  for (const p of state.players) {
+    const { w, s } = raw[p.id];
+    const st = { p, w, s };
+    st.startKg = w.length ? w[0].kg : null;
+    st.curKg = w.length ? w[w.length - 1].kg : null;
+    st.lowKg = w.length ? Math.min(...w.map(e => e.kg)) : null;
+    st.chgKg = w.length ? st.curKg - st.startKg : null;
+    st.chgPct = w.length ? st.chgKg / st.startKg * 100 : null;
+    st.lastWeigh = w.length ? w[w.length - 1].date : null;
+    st.daysSinceWeigh = st.lastWeigh ? dayDiff(st.lastWeigh, asOf) : null;
+    st.week = weekChange(w, thisWk);
+    st.target = p.targetKg && st.startKg && p.targetKg < st.startKg
+      ? { kg: p.targetKg, prog: Math.max(0, Math.min(1, (st.startKg - st.curKg) / (st.startKg - p.targetKg))), toGo: st.curKg - p.targetKg }
+      : null;
+
+    // steps
+    const firstStep = s.size ? [...s.keys()].sort()[0] : null;
+    const firstAny = [p.created, w[0]?.date, firstStep].filter(Boolean).sort()[0] || asOf;
+    const join = firstAny > start ? firstAny : start;
+    st.daysActive = Math.max(1, dayDiff(join, asOf) + 1);
+    st.stepsToday = s.get(asOf) ?? null;
+    let wkTotal = 0, total = 0, goalDays = 0;
+    for (const [d, v] of s) { total += v; if (d >= thisWk) wkTotal += v; if (v >= goal) goalDays++; }
+    st.stepsWeek = wkTotal; st.stepsTotal = total; st.goalDays = goalDays;
+    st.stepsAvg = total / st.daysActive;
+    st.bestDay = s.size ? Math.max(...s.values()) : 0;
+    let d = asOf; if (!((s.get(d) ?? 0) >= goal)) d = addDays(d, -1);
+    let gs = 0; while ((s.get(d) ?? 0) >= goal) { gs++; d = addDays(d, -1); }
+    st.goalStreak = gs;
+    const wkSet = new Set(w.map(e => weekStart(e.date)));
+    let wk = thisWk; if (!wkSet.has(wk)) wk = addDays(wk, -7);
+    let ws = 0; while (wkSet.has(wk)) { ws++; wk = addDays(wk, -7); }
+    st.weighStreak = ws; st.weighWeeks = wkSet.size;
+    st.wins = wins[p.id] || 0;
+
+    st.pts = {
+      loss: st.chgPct == null ? 0 : Math.round(-st.chgPct * POINTS.perPct),
+      steps: goalDays * POINTS.perGoalDay,
+      weigh: st.weighWeeks * POINTS.perWeighWeek,
+      wins: st.wins * POINTS.perWeeklyWin
+    };
+    st.points = st.pts.loss + st.pts.steps + st.pts.weigh + st.pts.wins;
+    stats[p.id] = st;
+  }
+  const list = Object.values(stats);
+  const ranks = {
+    overall: rankMap(list, x => x.points, false, x => x.chgPct ?? 0),
+    pct: rankMap(list.filter(x => x.chgPct != null), x => x.chgPct, true)
+  };
+  return { asOf, start, goal, thisWk, stats, list, weeks, ranks, seasonDay: dayDiff(start, asOf) + 1, weekNo: Math.floor(dayDiff(weekStart(start), asOf) / 7) + 1 };
+}
+
+function rankMap(list, val, asc, tiebreak) {
+  const sorted = [...list].sort((a, b) => {
+    const d = asc ? val(a) - val(b) : val(b) - val(a);
+    return d !== 0 ? d : tiebreak ? tiebreak(a) - tiebreak(b) : 0;
+  });
+  const out = {}; let prevV, prevR = 0;
+  sorted.forEach((x, i) => { const v = val(x); const r = i > 0 && v === prevV ? prevR : i + 1; out[x.p.id] = r; prevV = v; prevR = r; });
+  return out;
+}
+
+/* ---------------------------------------------------------------------
+   Rendering helpers
+   --------------------------------------------------------------------- */
+const player = id => state.players.find(p => p.id === id);
+const me = () => meId ? player(meId) : null;
+const canSeeWeight = p => p.showWeight || p.id === meId;
+const name = p => esc(p?.name ?? "?");
+const av = (p, cls = "") => `<span class="av ${cls}">${esc(p?.emoji || "🎾")}</span>`;
+
+function movement(id, nowRank, prevRanks) {
+  if (!prevRanks) return "";
+  const prev = prevRanks[id];
+  if (prev == null) return `<span class="mv new">NEW</span>`;
+  const d = prev - nowRank;
+  if (d > 0) return `<span class="mv up">▲${d}</span>`;
+  if (d < 0) return `<span class="mv down">▼${-d}</span>`;
+  return "";
+}
+
+function row({ p, rank, main, mainTone = "", small = "", sub = "", mv = "" }) {
+  const rk = rank == null ? "–" : rank;
+  return `<button class="row ${p.id === meId ? "me" : ""}" data-act="player" data-id="${esc(p.id)}">
+    <span class="rk r${rank}">${rk}</span>${av(p)}
+    <span class="who"><span class="nm">${name(p)} ${mv}</span><span class="sub">${sub}</span></span>
+    <span class="val"><b class="num ${mainTone}">${main}</b><small class="num">${small}</small></span>
+  </button>`;
+}
+
+function render() {
+  const view = $("#view");
+  $("#modeText").textContent = LIVE ? "Live" : "Demo";
+  $("#modePill").classList.toggle("demo", !LIVE);
+  $("#banner").innerHTML = LIVE ? "" : `<div class="banner"><span>Demo mode — sample crew, saved on this device only.</span><button data-act="reset-demo">Reset</button></div>`;
+  document.querySelectorAll(".tab[data-route]").forEach(t => t.classList.toggle("on", t.dataset.route === route));
+  if (!state.ready || !state.group) { view.innerHTML = `<div class="loading">Warming up…</div>`; return; }
+  if (meId && !player(meId)) { meId = null; prefs.del(ME_KEY); }
+  const C = compute();
+  const views = { home: renderHome, boards: renderBoards, trends: renderTrends, me: renderMe };
+  view.innerHTML = (views[route] || renderHome)(C);
+  mountCharts(C);
+  if (!meId && !spectator && !$("#sheet").open) openWho();
+}
+
+/* ---------- HOME ---------- */
+function renderHome(C) {
+  const { stats, list, goal } = C;
+  const weighed = list.filter(x => x.chgKg != null);
+  const groupKg = weighed.reduce((a, x) => a + x.chgKg, 0);
+  const downCount = weighed.filter(x => x.chgKg < 0).length;
+  const startsIn = dayDiff(C.asOf, C.start);
+
+  let html = `<div class="season">
+    ${startsIn > 0 ? `<span class="pill">Season starts in ${startsIn} day${startsIn > 1 ? "s" : ""}</span>` : `<span class="pill">Week ${C.weekNo} · Day ${C.seasonDay}</span>`}
+    <span class="pill">🥾 Goal ${fmtInt(goal)} steps/day</span>
+    <span class="pill">${list.length} in the squad</span>
+  </div>`;
+
+  html += `<section class="card hero">
+    <div class="eyebrow">Squad total since ${esc(fmtDate(C.start))}</div>
+    <div class="hero-row">
+      <div><div class="big num">${weighed.length ? fmtDelta(groupKg) : "—"}</div>
+      <div class="cap">${downCount} of ${list.length} heading the right way</div></div>
+      <div class="hero-stats">
+        <div><b class="num">${fmtK(list.reduce((a, x) => a + (x.stepsToday || 0), 0))}</b><span>steps today</span></div>
+        <div><b class="num">${list.filter(x => (x.stepsToday || 0) >= goal).length}/${list.length}</b><span>hit goal</span></div>
+      </div>
+    </div>
+  </section>`;
+
+  html += renderMyCard(C);
+
+  // Awards from the last completed week
+  const lw = C.weeks[C.weeks.length - 1];
+  if (lw && (lw.winners.length || lw.gainers.length)) {
+    const w = lw.winners[0], g = lw.gainers[0];
+    html += `<section class="card"><div class="card-h"><h2>Week ${lw.n} awards</h2><span class="meta">${esc(fmtDate(lw.wk))} – ${esc(fmtDate(addDays(lw.wk, 6)))}</span></div>
+      <div class="awards">
+        ${w ? `<button class="award win" data-act="player" data-id="${esc(w.pid)}"><div class="t">🥇 Biggest Loser</div><div class="n">${player(w.pid).emoji} ${lw.winners.map(x => name(player(x.pid))).join(" & ")}</div><div class="v good num">${fmtPct(w.ch.pct)} · ${fmtDelta(w.ch.kg)}</div></button>` : `<div class="award"><div class="t">🥇 Biggest Loser</div><div class="n faint">Nobody</div></div>`}
+        ${g ? `<button class="award shame" data-act="player" data-id="${esc(g.pid)}"><div class="t">🍩 Hall of Shame</div><div class="n">${player(g.pid).emoji} ${lw.gainers.map(x => name(player(x.pid))).join(" & ")}</div><div class="v bad num">${fmtPct(g.ch.pct)} · ${fmtDelta(g.ch.kg)}</div></button>` : `<div class="award"><div class="t">🍩 Hall of Shame</div><div class="n good">Clean sheet</div><div class="v faint">Nobody gained</div></div>`}
+      </div></section>`;
+  }
+
+  // Podium (overall)
+  const top = [...list].sort((a, b) => C.ranks.overall[a.p.id] - C.ranks.overall[b.p.id]).slice(0, 3);
+  if (top.length) {
+    const order = [top[1], top[0], top[2]];
+    html += `<section class="card"><div class="card-h"><h2>Belly Points</h2><button class="link" data-route="boards" data-board="overall">Full table →</button></div>
+      <div class="podium">${order.map((x, i) => x ? `<button class="pod p${[2, 1, 3][i]}" data-act="player" data-id="${esc(x.p.id)}">
+        ${av(x.p)}<div class="nm">${name(x.p)}</div><div class="pv num">${x.points} pts</div><div class="step">${C.ranks.overall[x.p.id]}</div></button>` : "<div></div>").join("")}</div>
+    </section>`;
+  }
+
+  // Today's step race
+  const race = [...list].sort((a, b) => (b.stepsToday ?? -1) - (a.stepsToday ?? -1));
+  html += `<section class="card"><div class="card-h"><h2>Today's step race</h2><button class="link" data-act="log-steps">Log steps</button></div>
+    <div class="race">${race.map(x => {
+      const v = x.stepsToday, hit = (v || 0) >= goal;
+      return `<button class="race-row" data-act="player" data-id="${esc(x.p.id)}">${av(x.p, "sm")}
+        <div><div class="top"><span>${name(x.p)}${x.p.id === meId ? ` <span class="tag">YOU</span>` : ""}</span><span class="num">${v == null ? "not logged" : fmtInt(v)}</span></div>
+        <div class="bar ${hit ? "hit" : ""}"><i style="width:${Math.min(100, (v || 0) / goal * 100)}%"></i></div></div>
+        <span class="ok" aria-label="${hit ? "goal hit" : ""}">${hit ? "✅" : ""}</span></button>`;
+    }).join("") || `<p class="empty">No one here yet.</p>`}</div></section>`;
+
+  // Dodging the scales
+  const dodgers = list.filter(x => x.daysSinceWeigh == null || x.daysSinceWeigh >= 7).sort((a, b) => (b.daysSinceWeigh ?? 999) - (a.daysSinceWeigh ?? 999));
+  if (dodgers.length && C.seasonDay > 0) {
+    html += `<section class="card"><div class="card-h"><h2>Dodging the scales 👀</h2><span class="meta">7+ days since a weigh-in</span></div>
+      <div class="dodgers">${dodgers.map(x => `<button class="dodger" data-act="player" data-id="${esc(x.p.id)}">${av(x.p)}${name(x.p)} <small>${x.daysSinceWeigh == null ? "never" : x.daysSinceWeigh + "d"}</small></button>`).join("")}</div></section>`;
+  }
+
+  // Banter feed
+  const feedFull = buildFeed(C), feed = feedAll ? feedFull : feedFull.slice(0, 10);
+  html += `<section class="card"><div class="card-h"><h2>Banter board</h2><span class="meta">Latest activity</span></div>
+    <div class="feed">${feed.length ? feed.map(e => `<div class="ev">${av(e.p, "sm")}<div>
+      <div class="tx">${e.full ?? `<b>${name(e.p)}</b> ${e.html}`}${e.tags?.length ? `<span class="tags">${e.tags.map(t => `<span class="tag">${t}</span>`).join("")}</span>` : ""}</div>
+      <div class="when">${esc(relDay(e.date))}</div></div></div>`).join("") : `<p class="empty">Nothing yet. First to the scales sets the pace.</p>`}</div>
+    ${feedFull.length > 10 ? `<div class="btn-row"><button class="btn" data-act="feed-more">${feedAll ? "Show less" : "Show more"}</button></div>` : ""}</section>`;
+
+  return html;
+}
+
+function renderMyCard(C) {
+  const m = me();
+  if (!m) {
+    return `<section class="card"><div class="card-h"><h2>You're spectating</h2></div>
+      <p class="faint" style="margin:0 0 4px;font-size:.9rem">Join the squad to log your weigh-ins and steps.</p>
+      <div class="btn-row"><button class="btn primary" data-act="who">Join / pick yourself</button></div></section>`;
+  }
+  const x = C.stats[m.id];
+  const rank = C.ranks.overall[m.id];
+  const goal = C.goal;
+  // the gap to the player directly above on the fair (% body weight) board
+  let nudge = "";
+  const pr = C.ranks.pct[m.id];
+  if (pr != null) {
+    const above = C.list.filter(o => C.ranks.pct[o.p.id] === pr - 1)[0];
+    if (above) nudge = `<b>${fmtPct(x.chgPct - above.chgPct).replace(/^[+−±]/, "")}</b> of body weight behind ${name(above.p)} for #${pr - 1} on the Body % board.`;
+    else if (pr === 1 && C.list.length > 1) {
+      const next = C.list.filter(o => C.ranks.pct[o.p.id] === 2)[0];
+      nudge = next ? `You're top of the Body % board — <b>${Math.abs(x.chgPct - next.chgPct).toFixed(1)}%</b> clear of ${name(next.p)}. Don't get comfy.` : "";
+    }
+  } else nudge = "Log your first weigh-in to get on the board.";
+  const stepsPct = Math.min(100, (x.stepsToday || 0) / goal * 100);
+  return `<section class="card">
+    <div class="me-top">${av(m, "lg")}<div style="min-width:0;flex:1"><div class="me-name">${name(m)}</div>
+      <div class="me-sub">#${rank} overall · ${x.points} Belly Points</div></div>
+      <div style="text-align:right"><div class="num ${tone(x.chgPct)}" style="font-family:Outfit;font-weight:900;font-size:1.5rem">${fmtPct(x.chgPct)}</div><div class="me-sub num">${fmtDelta(x.chgKg)}</div></div></div>
+    <div style="margin-top:14px"><div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px"><span class="faint">Steps today</span><span class="num">${x.stepsToday == null ? "—" : fmtInt(x.stepsToday)} / ${fmtInt(goal)}</span></div>
+      <div class="bar ${stepsPct >= 100 ? "hit" : ""}"><i style="width:${stepsPct}%"></i></div></div>
+    ${nudge ? `<div class="nudge">${nudge}</div>` : ""}
+    <div class="btn-row"><button class="btn primary" data-act="log-weight">⚖️ Weigh in</button><button class="btn" data-act="log-steps">🥾 Log steps</button></div>
+  </section>`;
+}
+
+function buildFeed(C) {
+  const ev = [];
+  for (const x of C.list) {
+    const { p, w } = x;
+    let low = Infinity, milestone = 0;
+    w.forEach((e, i) => {
+      if (i === 0) { ev.push({ p, date: e.date, ts: e.ts || 0, html: "stepped on the scales for the first time. Game on." }); low = e.kg; return; }
+      const d = e.kg - w[i - 1].kg;
+      const tags = [];
+      const html = d < -0.004 ? `dropped <b class="good">${fmtDelta(d)}</b>` : d > 0.004 ? `put on <b class="bad">${fmtDelta(d)}</b> 🍩` : "held steady on the scales";
+      if (e.kg < low) { if (d < 0) tags.push("new low 🏆"); low = e.kg; }
+      const pct = (w[0].kg - e.kg) / w[0].kg * 100, m = Math.floor(pct / 5) * 5;
+      if (m >= 5 && m > milestone) { tags.push(`${m}% down 🎉`); milestone = m; }
+      ev.push({ p, date: e.date, ts: e.ts || 0, html, tags });
+    });
+  }
+  // step goal hits grouped per day; monster days called out individually
+  const byDay = new Map();
+  for (const x of C.list) for (const [date, v] of x.s) {
+    if (v >= C.goal * 2) ev.push({ p: x.p, date, ts: 1, html: `went full mountain goat: <b>${fmtInt(v)}</b> steps 🔥` });
+    else if (v >= C.goal) { if (!byDay.has(date)) byDay.set(date, []); byDay.get(date).push(x.p); }
+  }
+  for (const [date, ps] of byDay) {
+    const names = ps.map(p => `<b>${name(p)}</b>`);
+    const joined = names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0];
+    ev.push({ p: { emoji: "🥾" }, date, ts: 0, full: `${joined} hit the step goal` });
+  }
+  for (const wk of C.weeks) {
+    for (const c of wk.winners) ev.push({ p: player(c.pid), date: addDays(wk.wk, 6), ts: 2, html: `won <b>Biggest Loser</b> of week ${wk.n} (${fmtPct(c.ch.pct)}) 🥇` });
+  }
+  ev.sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : (b.ts - a.ts));
+  return ev.slice(0, 30);
+}
+
+/* ---------- BOARDS ---------- */
+let feedAll = false;
+let board = "overall";
+let stepsRange = "today";
+const BOARDS = [
+  ["overall", "🏆 Overall"], ["pct", "⚖️ Body %"], ["kg", "📉 Weight lost"], ["week", "📅 This week"],
+  ["steps", "🥾 Steps"], ["streaks", "🔥 Streaks"], ["target", "🎯 Targets"]
+];
+
+function renderBoards(C) {
+  let html = `<div class="chips" role="tablist">${BOARDS.map(([k, l]) => `<button class="chip ${board === k ? "on" : ""}" data-act="board" data-board="${k}">${l}</button>`).join("")}</div>`;
+  const prev = C.seasonDay > 7 ? compute(addDays(C.asOf, -7)) : null;
+  const L = C.list;
+  const card = (title, meta, body, extra = "") => `<section class="card"><div class="card-h"><h2>${title}</h2>${meta}</div>${extra}<div class="rows">${body || `<p class="empty">No data yet.</p>`}</div></section>`;
+  const sortRank = (arr, rk) => arr.sort((a, b) => (rk[a.p.id] ?? 999) - (rk[b.p.id] ?? 999));
+
+  if (board === "overall") {
+    const rk = C.ranks.overall;
+    html += card("Belly Points", `<button class="link" data-act="points-info">How it works</button>`,
+      sortRank([...L], rk).map(x => row({
+        p: x.p, rank: rk[x.p.id], main: `${x.points} pts`, small: fmtPct(x.chgPct),
+        sub: `${x.pts.loss} wt · ${x.pts.steps} steps · ${x.pts.weigh} wk${x.wins ? ` · ${x.wins}🥇` : ""}`,
+        mv: movement(x.p.id, rk[x.p.id], prev?.ranks.overall)
+      })).join(""));
+  }
+  if (board === "pct") {
+    const rk = C.ranks.pct;
+    const ranked = sortRank(L.filter(x => x.chgPct != null), rk), rest = L.filter(x => x.chgPct == null);
+    html += card("Body weight change", `<span class="meta">The fair fight · % of start weight</span>`,
+      ranked.map(x => row({
+        p: x.p, rank: rk[x.p.id], main: fmtPct(x.chgPct), mainTone: tone(x.chgPct), small: fmtDelta(x.chgKg),
+        sub: `${x.w.length} weigh-in${x.w.length === 1 ? "" : "s"} · last ${esc(relDay(x.lastWeigh))}`,
+        mv: movement(x.p.id, rk[x.p.id], prev?.ranks.pct)
+      })).join("") + rest.map(x => row({ p: x.p, rank: null, main: "—", sub: "No weigh-in yet" })).join(""));
+  }
+  if (board === "kg") {
+    const withW = L.filter(x => x.chgKg != null);
+    const rk = rankMap(withW, x => x.chgKg, true);
+    html += card("Weight lost", `<span class="meta">Raw ${unit === "kg" ? "kg" : "lb"} — big lads' board</span>`,
+      sortRank(withW, rk).map(x => row({
+        p: x.p, rank: rk[x.p.id], main: fmtDelta(x.chgKg), mainTone: tone(x.chgKg), small: fmtPct(x.chgPct),
+        sub: canSeeWeight(x.p) ? `${fmtWeight(x.startKg)} → ${fmtWeight(x.curKg)}` : `Low point ${fmtDelta(x.lowKg - x.startKg)}`
+      })).join(""));
+  }
+  if (board === "week") {
+    const withW = L.filter(x => x.week);
+    const rk = rankMap(withW, x => x.week.pct, true);
+    const missing = L.filter(x => !x.week);
+    html += card("This week", `<span class="meta">Since last week's final weigh-in</span>`,
+      sortRank(withW, rk).map(x => row({
+        p: x.p, rank: rk[x.p.id], main: fmtPct(x.week.pct), mainTone: tone(x.week.pct), small: fmtDelta(x.week.kg),
+        sub: x.week.pct > 0 ? "🍩 Hall of Shame candidate" : x.week.pct < 0 ? "Heading for Biggest Loser" : "Holding"
+      })).join("") + missing.map(x => row({ p: x.p, rank: null, main: "—", sub: "Not weighed in this week 👀" })).join(""));
+    // history of weekly awards
+    const done = C.weeks.filter(w => w.winners.length || w.gainers.length).slice().reverse();
+    if (done.length) {
+      html += `<section class="card"><div class="card-h"><h2>Roll of honour</h2><span class="meta">Weekly awards</span></div><div class="hist">${done.map(w => `
+        <div class="hrow"><div class="l">Week ${w.n}<small>${esc(fmtDate(w.wk))} – ${esc(fmtDate(addDays(w.wk, 6)))}</small></div>
+        <div style="text-align:right;font-size:.84rem">${w.winners.map(c => `🥇 ${name(player(c.pid))} <span class="good num">${fmtPct(c.ch.pct)}</span>`).join("<br>")}
+        ${w.gainers.map(c => `<br>🍩 ${name(player(c.pid))} <span class="bad num">${fmtPct(c.ch.pct)}</span>`).join("")}</div></div>`).join("")}</div></section>`;
+    }
+  }
+  if (board === "steps") {
+    const ranges = { today: ["Today", x => x.stepsToday ?? 0, C.goal], week: ["This week", x => x.stepsWeek, C.goal * (dayDiff(C.thisWk, C.asOf) + 1)], avg: ["Daily avg", x => x.stepsAvg, C.goal] };
+    const [, val, target] = ranges[stepsRange];
+    const rk = rankMap(L, val, false);
+    const seg = `<div class="seg" style="margin-bottom:12px">${Object.entries(ranges).map(([k, [l]]) => `<button class="${stepsRange === k ? "on" : ""}" data-act="steps-range" data-range="${k}">${l}</button>`).join("")}</div>`;
+    html += card("Steps", `<span class="meta">Goal ${fmtInt(C.goal)}/day</span>`,
+      sortRank([...L], rk).map(x => {
+        const v = val(x);
+        return row({
+          p: x.p, rank: rk[x.p.id], main: fmtInt(v), small: stepsRange === "avg" ? `${x.goalDays} goal days` : `${Math.round(v / target * 100)}% of goal`,
+          sub: `<div class="bar ${v >= target ? "hit" : ""}"><i style="width:${Math.min(100, v / target * 100)}%"></i></div>`
+        });
+      }).join(""), seg);
+  }
+  if (board === "streaks") {
+    const rk1 = rankMap(L, x => x.goalStreak, false), rk2 = rankMap(L, x => x.weighStreak, false);
+    html += card("Step goal streak", `<span class="meta">Consecutive days ≥ ${fmtK(C.goal)}</span>`,
+      sortRank([...L], rk1).map(x => row({ p: x.p, rank: rk1[x.p.id], main: `${x.goalStreak} 🔥`, small: `best day ${fmtK(x.bestDay)}`, sub: `${x.goalDays} goal days this season` })).join(""));
+    html += card("Weigh-in streak", `<span class="meta">Consecutive weeks on the scales</span>`,
+      sortRank([...L], rk2).map(x => row({ p: x.p, rank: rk2[x.p.id], main: `${x.weighStreak} wk`, small: `${x.weighWeeks} total`, sub: x.lastWeigh ? `Last weighed ${esc(relDay(x.lastWeigh))}` : "Never weighed in" })).join(""));
+  }
+  if (board === "target") {
+    const withT = L.filter(x => x.target);
+    const rk = rankMap(withT, x => x.target.prog, false);
+    html += card("Progress to target", `<span class="meta">Everyone sets their own</span>`,
+      sortRank(withT, rk).map(x => row({
+        p: x.p, rank: rk[x.p.id], main: `${Math.round(x.target.prog * 100)}%`, small: x.target.toGo <= 0 ? "Target smashed 🎯" : `${fmtDelta(x.target.toGo).replace(/^[+−±]/, "")} to go`,
+        sub: `<div class="bar ${x.target.prog >= 1 ? "hit" : ""}"><i style="width:${x.target.prog * 100}%"></i></div>`
+      })).join("") + L.filter(x => !x.target).map(x => row({ p: x.p, rank: null, main: "—", sub: "No target set" })).join(""));
+  }
+  return html;
+}
+
+/* ---------- TRENDS ---------- */
+let compareId = null;
+let showTable = false;
+
+function renderTrends(C) {
+  const m = me();
+  const cmp = compareId && player(compareId) && compareId !== meId ? player(compareId) : null;
+  let html = `<section class="card"><div class="card-h"><h2>Body weight change</h2><button class="link" data-act="chart-table">${showTable ? "Chart" : "Table"}</button></div>
+    <p class="faint" style="margin:-6px 0 10px;font-size:.8rem">% change from each player's first weigh-in this season. ${m ? "You're in blue" : "Tap a name to highlight"}${cmp ? `, ${name(cmp)} in orange` : m ? " — tap a name to compare" : ""}.</p>`;
+  if (showTable) {
+    const rows = C.list.filter(x => x.chgPct != null).sort((a, b) => a.chgPct - b.chgPct);
+    html += `<table class="data"><thead><tr><th>Player</th><th>This week</th><th>Season</th><th>Change</th></tr></thead><tbody>${rows.map(x => `<tr><td>${esc(x.p.emoji)} ${name(x.p)}</td><td class="num ${tone(x.week?.pct)}">${fmtPct(x.week?.pct)}</td><td class="num ${tone(x.chgPct)}">${fmtPct(x.chgPct)}</td><td class="num">${fmtDelta(x.chgKg)}</td></tr>`).join("")}</tbody></table>`;
+  } else {
+    html += `<div class="chart" id="chartGroup"></div>`;
+    html += `<div class="legend">${C.list.map(x => `<button class="${x.p.id === meId ? "me" : x.p.id === cmp?.id ? "cmp" : ""}" data-act="compare" data-id="${esc(x.p.id)}"><i></i>${name(x.p)}</button>`).join("")}</div>`;
+  }
+  html += `</section>`;
+
+  if (m) {
+    html += `<section class="card"><div class="card-h"><h2>Your steps</h2><span class="meta">Last 14 days</span></div><div class="chart" id="chartSteps"></div></section>`;
+  }
+
+  // group step averages per week
+  const weeksBack = Math.min(6, C.weekNo);
+  if (weeksBack > 0 && C.list.length) {
+    const rowsW = [];
+    for (let i = weeksBack - 1; i >= 0; i--) {
+      const wk = addDays(C.thisWk, -7 * i);
+      if (wk < weekStart(C.start)) continue;
+      const days = Math.min(7, dayDiff(wk < C.start ? C.start : wk, C.asOf) + 1);
+      let tot = 0, hits = 0;
+      for (const x of C.list) for (const [d, v] of x.s) if (d >= wk && d < addDays(wk, 7)) { tot += v; if (v >= C.goal) hits++; }
+      rowsW.push({ wk, avg: tot / (days * C.list.length), hits, poss: days * C.list.length });
+    }
+    html += `<section class="card"><div class="card-h"><h2>Squad steps by week</h2><span class="meta">Avg per person per day</span></div>
+      <table class="data"><thead><tr><th>Week of</th><th>Avg steps</th><th>Goal days hit</th></tr></thead><tbody>
+      ${rowsW.reverse().map(r => `<tr><td>${esc(fmtDate(r.wk))}</td><td class="num ${r.avg >= C.goal ? "good" : ""}">${fmtInt(r.avg)}</td><td class="num">${r.hits}/${r.poss}</td></tr>`).join("")}
+      </tbody></table></section>`;
+  }
+  return html;
+}
+
+/* ---------- ME ---------- */
+function renderMe(C) {
+  const m = me();
+  let html = "";
+  if (m) {
+    const x = C.stats[m.id];
+    html += `<section class="card"><div class="me-top">${av(m, "lg")}<div style="flex:1;min-width:0"><div class="me-name">${name(m)}</div>
+      <div class="me-sub">${m.showWeight ? "Sharing exact weight" : "Exact weight hidden from the squad"}${m.pinHash ? " · PIN on" : ""}</div></div>
+      <button class="btn" style="flex:0;padding:8px 14px;min-height:38px" data-act="edit-profile">Edit</button></div>
+      <div class="stat-grid">
+        <div class="stat"><b class="num">${fmtWeight(x.curKg)}</b><span>Current</span></div>
+        <div class="stat"><b class="num">${fmtWeight(x.startKg)}</b><span>Season start</span></div>
+        <div class="stat"><b class="num ${tone(x.chgKg)}">${fmtDelta(x.chgKg)}</b><span>Change</span></div>
+        <div class="stat"><b class="num">${fmtWeight(x.lowKg)}</b><span>Lowest</span></div>
+        <div class="stat"><b class="num">${x.target ? Math.round(x.target.prog * 100) + "%" : "—"}</b><span>${x.target ? "To " + fmtWeight(x.target.kg) : "No target"}</span></div>
+        <div class="stat"><b class="num">${fmtInt(x.stepsAvg)}</b><span>Avg steps/day</span></div>
+      </div>
+      <div class="chart" id="chartMe" style="margin-top:14px"></div></section>`;
+    html += `<section class="card"><div class="card-h"><h2>Points breakdown</h2><button class="link" data-act="points-info">Rules</button></div>
+      <ul class="rules">
+        <li><span>Weight (${fmtPct(x.chgPct)} × ${POINTS.perPct})</span><b class="num">${x.pts.loss}</b></li>
+        <li><span>Step goal days (${x.goalDays})</span><b class="num">${x.pts.steps}</b></li>
+        <li><span>Weeks weighed in (${x.weighWeeks})</span><b class="num">${x.pts.weigh}</b></li>
+        <li><span>Biggest Loser wins (${x.wins})</span><b class="num">${x.pts.wins}</b></li>
+        <li><span><strong>Total</strong></span><b class="num">${x.points}</b></li>
+      </ul></section>`;
+    html += historyCard(m.id, true);
+  } else {
+    html += renderMyCard(C);
+  }
+  html += `<section class="card"><div class="card-h"><h2>Settings</h2></div><div class="set">
+    <div class="set-row" style="cursor:default"><span class="k">Units<small>Just for this device</small></span>
+      <div class="seg">${[["kg", "kg"], ["st", "st & lb"], ["lb", "lb"]].map(([k, l]) => `<button class="${unit === k ? "on" : ""}" data-act="unit" data-unit="${k}">${l}</button>`).join("")}</div></div>
+    <button class="set-row" data-act="group-settings"><span class="k">Season & step goal<small>Shared by the whole squad</small></span><span class="v">${fmtK(state.group.stepGoal)} · from ${esc(fmtDate(state.group.startDate))} ›</span></button>
+    <button class="set-row" data-act="points-info"><span class="k">How Belly Points work</span><span class="v">›</span></button>
+    <button class="set-row" data-act="who"><span class="k">${m ? "Switch player" : "Join / pick yourself"}<small>${m ? "Using someone else's phone?" : "Get on the leaderboard"}</small></span><span class="v">›</span></button>
+    ${LIVE ? "" : `<button class="set-row" data-act="reset-demo"><span class="k">Reset demo data</span><span class="v">›</span></button>`}
+  </div></section>
+  <p class="footer">${LIVE ? "Live · synced across the squad" : "Demo mode · add Firebase config to go live"} · Belly Must Go</p>`;
+  return html;
+}
+
+const dateCell = d => {
+  const r = relDay(d), f = fmtDate(d);
+  return `<div class="l">${esc(r)}${r !== f ? `<small>${esc(f)}</small>` : ""}</div>`;
+};
+
+function historyCard(pid, editable) {
+  const p = player(pid);
+  const ws = state.weighins.filter(e => e.pid === pid).sort((a, b) => a.date < b.date ? 1 : -1);
+  const ss = state.steps.filter(e => e.pid === pid).sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 21);
+  const seeW = canSeeWeight(p);
+  const wRows = ws.slice(0, 30).map((e, i) => {
+    const prev = ws[i + 1];
+    const d = prev ? e.kg - prev.kg : null;
+    return `<div class="hrow">${dateCell(e.date)}
+      <div class="r"><span class="num">${seeW ? fmtWeight(e.kg) : ""}</span> <span class="num ${tone(d)}" style="font-size:.8rem;min-width:62px;text-align:right">${d == null ? "start" : fmtDelta(d)}</span>
+      ${editable ? `<button class="icon-btn" data-act="edit-weigh" data-date="${e.date}" aria-label="Edit">✎</button><button class="icon-btn" data-act="del-weigh" data-id="${esc(e.id)}" aria-label="Delete">✕</button>` : ""}</div></div>`;
+  }).join("");
+  const sRows = ss.map(e => `<div class="hrow">${dateCell(e.date)}
+      <div class="r"><span class="num ${e.steps >= state.group.stepGoal ? "good" : ""}">${fmtInt(e.steps)}</span>
+      ${editable ? `<button class="icon-btn" data-act="edit-steps" data-date="${e.date}" aria-label="Edit">✎</button><button class="icon-btn" data-act="del-steps" data-id="${esc(e.id)}" aria-label="Delete">✕</button>` : ""}</div></div>`).join("");
+  return `<section class="card"><div class="card-h"><h2>Weigh-ins</h2><span class="meta">${ws.length} total</span></div><div class="hist">${wRows || `<p class="empty">None yet.</p>`}</div></section>
+    <section class="card"><div class="card-h"><h2>Steps</h2><span class="meta">Last 3 weeks</span></div><div class="hist">${sRows || `<p class="empty">None yet.</p>`}</div></section>`;
+}
+
+/* ---------------------------------------------------------------------
+   Charts (inline SVG). One y-axis, muted others, highlighted you/compare,
+   crosshair + tooltip listing every series at the hovered date.
+   --------------------------------------------------------------------- */
+const SVGNS = "http://www.w3.org/2000/svg";
+
+function niceTicks(lo, hi, count = 4) {
+  const raw = (hi - lo) / count, mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => s >= raw) || raw;
+  const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(round(v, 6));
+  return out;
+}
+
+function lineChart(el, { series, fmtY, fmtTip, zero = true, height = 230 }) {
+  const pts = series.flatMap(s => s.points);
+  if (!pts.length) { el.innerHTML = `<p class="empty">No weigh-ins yet.</p>`; return; }
+  const W = Math.max(280, el.clientWidth), H = height;
+  const M = { t: 12, r: 64, b: 24, l: 40 };
+  let x0 = Math.min(...pts.map(p => p.x)), x1 = Math.max(...pts.map(p => p.x));
+  if (x0 === x1) { x0 -= 3; x1 += 3; }
+  let y0 = Math.min(...pts.map(p => p.v)), y1 = Math.max(...pts.map(p => p.v));
+  if (zero) { y0 = Math.min(0, y0); y1 = Math.max(0, y1); }
+  const padY = (y1 - y0) * 0.12 || 1; y0 -= padY; y1 += padY;
+  const X = x => M.l + (x - x0) / (x1 - x0) * (W - M.l - M.r);
+  const Y = v => M.t + (y1 - v) / (y1 - y0) * (H - M.t - M.b);
+
+  const yt = niceTicks(y0, y1, 4);
+  const xt = [x0, Math.round((x0 + x1) / 2), x1];
+  const dateOf = x => toStr(new Date(2000, 0, 1 + x));
+  let svg = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Line chart">`;
+  svg += `<g class="grid">${yt.map(v => `<line x1="${M.l}" x2="${W - M.r}" y1="${Y(v)}" y2="${Y(v)}"/>`).join("")}</g>`;
+  if (zero) svg += `<line class="zero" x1="${M.l}" x2="${W - M.r}" y1="${Y(0)}" y2="${Y(0)}"/>`;
+  svg += `<g class="axis">${yt.map(v => `<text x="${M.l - 6}" y="${Y(v) + 3.5}" text-anchor="end">${esc(fmtY(v))}</text>`).join("")}
+    ${xt.map((x, i) => `<text x="${X(x)}" y="${H - 6}" text-anchor="${["start", "middle", "end"][i]}">${esc(fmtDate(dateOf(x)))}</text>`).join("")}</g>`;
+  const order = [...series].sort((a, b) => ({ other: 0, cmp: 1, me: 2 }[a.role] - { other: 0, cmp: 1, me: 2 }[b.role]));
+  const col = r => r === "me" ? "var(--series-1)" : r === "cmp" ? "var(--series-2)" : "var(--series-muted)";
+  for (const s of order) {
+    if (!s.points.length) continue;
+    const d = s.points.map((p, i) => `${i ? "L" : "M"}${X(p.x).toFixed(1)},${Y(p.v).toFixed(1)}`).join("");
+    svg += `<path d="${d}" fill="none" stroke="${col(s.role)}" stroke-width="${s.role === "other" ? 1.5 : 2}" stroke-linejoin="round" stroke-linecap="round"/>`;
+    if (s.role !== "other") {
+      const last = s.points[s.points.length - 1];
+      svg += `<circle cx="${X(last.x)}" cy="${Y(last.v)}" r="4" fill="${col(s.role)}" stroke="var(--surface)" stroke-width="2"/>`;
+    }
+  }
+  // direct labels for highlighted series, nudged apart if they collide
+  const labelled = order.filter(s => s.role !== "other" && s.points.length).map(s => ({ s, y: Y(s.points[s.points.length - 1].v), x: X(s.points[s.points.length - 1].x) }));
+  if (labelled.length === 2 && Math.abs(labelled[0].y - labelled[1].y) < 24) {
+    const [a, b] = labelled[0].y < labelled[1].y ? labelled : [labelled[1], labelled[0]];
+    const mid = (a.y + b.y) / 2; a.y = mid - 12; b.y = mid + 12;
+  }
+  for (const l of labelled) {
+    const v = l.s.points[l.s.points.length - 1].v;
+    svg += `<text class="lbl" x="${l.x + 8}" y="${l.y - 1}">${esc(l.s.label)}</text><text class="lbl-sub" x="${l.x + 8}" y="${l.y + 11}">${esc(fmtY(v, true))}</text>`;
+  }
+  svg += `<line id="xh" x1="0" x2="0" y1="${M.t}" y2="${H - M.b}" stroke="rgba(222,232,245,0.35)" stroke-width="1" visibility="hidden"/>`;
+  svg += `<rect x="${M.l}" y="0" width="${W - M.l - M.r}" height="${H}" fill="transparent" style="cursor:crosshair"/>`;
+  svg += `</svg><div class="tip"></div>`;
+  el.innerHTML = svg;
+
+  const svgEl = el.querySelector("svg"), tip = el.querySelector(".tip"), xh = el.querySelector("#xh");
+  const xs = [...new Set(pts.map(p => p.x))].sort((a, b) => a - b);
+  const move = ev => {
+    const r = svgEl.getBoundingClientRect();
+    const px = (ev.clientX - r.left) * (W / r.width);
+    const xv = x0 + (px - M.l) / (W - M.l - M.r) * (x1 - x0);
+    const x = xs.reduce((best, c) => Math.abs(c - xv) < Math.abs(best - xv) ? c : best, xs[0]);
+    xh.setAttribute("x1", X(x)); xh.setAttribute("x2", X(x)); xh.setAttribute("visibility", "visible");
+    const rowsT = series.map(s => {
+      const prior = s.points.filter(p => p.x <= x);
+      return prior.length ? { s, v: prior[prior.length - 1].v } : null;
+    }).filter(Boolean).sort((a, b) => a.v - b.v);
+    tip.innerHTML = `<div class="d">${esc(fmtDate(dateOf(x)))}</div>` + rowsT.map(r => `<div class="r"><i style="background:${col(r.s.role)}"></i><span>${esc(r.s.label)}</span><b class="num">${esc((fmtTip || fmtY)(r.v, true))}</b></div>`).join("");
+    tip.style.display = "block";
+    const tx = X(x) / W * r.width;
+    const tw = tip.offsetWidth;
+    tip.style.left = Math.max(0, Math.min(r.width - tw, tx + 12 + tw > r.width ? tx - tw - 12 : tx + 12)) + "px";
+  };
+  const leave = () => { tip.style.display = "none"; xh.setAttribute("visibility", "hidden"); };
+  svgEl.addEventListener("pointermove", move);
+  svgEl.addEventListener("pointerdown", move);
+  svgEl.addEventListener("pointerleave", leave);
+}
+
+function stepsChart(el, pid, goal) {
+  const end = today(), days = [];
+  for (let i = 13; i >= 0; i--) days.push(addDays(end, -i));
+  const map = new Map(state.steps.filter(e => e.pid === pid).map(e => [e.date, e.steps]));
+  const vals = days.map(d => map.get(d) ?? null);
+  const W = Math.max(280, el.clientWidth), H = 180, M = { t: 12, r: 8, b: 24, l: 40 };
+  const ymax = Math.max(goal * 1.15, ...vals.map(v => v || 0)) * 1.05;
+  const bw = (W - M.l - M.r) / days.length;
+  const Y = v => M.t + (1 - v / ymax) * (H - M.t - M.b);
+  const yt = niceTicks(0, ymax, 3);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Steps per day, last 14 days">`;
+  svg += `<g class="grid">${yt.map(v => `<line x1="${M.l}" x2="${W - M.r}" y1="${Y(v)}" y2="${Y(v)}"/>`).join("")}</g>`;
+  svg += `<g class="axis">${yt.map(v => `<text x="${M.l - 6}" y="${Y(v) + 3.5}" text-anchor="end">${fmtK(v)}</text>`).join("")}`;
+  [0, 7, 13].forEach(i => svg += `<text x="${M.l + bw * i + bw / 2}" y="${H - 6}" text-anchor="middle">${esc(fmtDate(days[i]))}</text>`);
+  svg += `</g>`;
+  vals.forEach((v, i) => {
+    const x = M.l + bw * i + 2, w = Math.max(2, bw - 4);
+    if (v) {
+      const y = Y(v), h = Y(0) - y, r = Math.min(4, w / 2, h);
+      svg += `<path d="M${x},${Y(0)}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${Y(0)}Z" fill="${v >= goal ? "var(--good)" : "var(--series-1)"}"/>`;
+    }
+    svg += `<rect data-i="${i}" x="${M.l + bw * i}" y="${M.t}" width="${bw}" height="${H - M.t - M.b}" fill="transparent"/>`;
+  });
+  svg += `<line x1="${M.l}" x2="${W - M.r}" y1="${Y(goal)}" y2="${Y(goal)}" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+  svg += `<text class="lbl-sub" x="${W - M.r}" y="${Y(goal) - 5}" text-anchor="end">goal ${fmtK(goal)}</text>`;
+  svg += `</svg><div class="tip"></div>`;
+  el.innerHTML = svg;
+  const tip = el.querySelector(".tip"), svgEl = el.querySelector("svg");
+  svgEl.addEventListener("pointermove", ev => {
+    const i = ev.target.dataset?.i; if (i == null) return;
+    const r = svgEl.getBoundingClientRect();
+    tip.innerHTML = `<div class="d">${esc(relDay(days[i]))}</div><div><b class="num">${vals[i] == null ? "Not logged" : fmtInt(vals[i]) + " steps"}</b>${vals[i] >= goal ? " ✅" : ""}</div>`;
+    tip.style.display = "block";
+    const cx = (M.l + bw * i + bw / 2) / W * r.width;
+    tip.style.left = Math.max(0, Math.min(r.width - tip.offsetWidth, cx - tip.offsetWidth / 2)) + "px";
+  });
+  svgEl.addEventListener("pointerleave", () => tip.style.display = "none");
+}
+
+function weightSeries(x, roleFor) {
+  return { id: x.p.id, label: x.p.name, role: roleFor(x.p.id), points: x.w.map(e => ({ x: dayNum(e.date), v: (e.kg - x.startKg) / x.startKg * 100 })) };
+}
+
+function mountCharts(C) {
+  const pctFmt = (v, precise) => precise ? fmtPct(v) : `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(round(v, 1))}%`;
+  const g = $("#chartGroup");
+  if (g) {
+    const cmp = compareId !== meId ? compareId : null;
+    lineChart(g, { series: C.list.map(x => weightSeries(x, id => id === meId ? "me" : id === cmp ? "cmp" : "other")), fmtY: pctFmt });
+  }
+  const s = $("#chartSteps");
+  if (s && meId) stepsChart(s, meId, C.goal);
+  const pm = $("#chartMe") || $("#chartPlayer");
+  if (pm) {
+    const x = C.stats[pm.dataset.pid || meId];
+    if (x) {
+      const exact = canSeeWeight(x.p);
+      lineChart(pm, {
+        series: [{ id: x.p.id, label: exact ? "Weight" : "Change", role: "me", points: x.w.map(e => ({ x: dayNum(e.date), v: exact ? e.kg : e.kg - x.startKg })) }],
+        fmtY: (v, precise) => exact ? (unit === "kg" ? `${precise ? v.toFixed(1) : Math.round(v)}` : unit === "lb" ? `${Math.round(v / KG_PER_LB)}` : precise ? fmtWeight(v) : `${Math.floor(v / KG_PER_LB / 14)}st`) : fmtDelta(v),
+        fmtTip: v => exact ? fmtWeight(v) : fmtDelta(v),
+        zero: !exact, height: 180
+      });
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Sheets (forms)
+   --------------------------------------------------------------------- */
+const sheet = $("#sheet");
+let sheetLocked = false;
+function openSheet(html, onMount, { locked = false } = {}) {
+  $("#sheetBody").innerHTML = html;
+  sheetLocked = locked;
+  if (!sheet.open) sheet.showModal();
+  onMount && onMount($("#sheetBody"));
+}
+function closeSheet() { sheetLocked = false; sheet.close(); }
+sheet.addEventListener("click", e => { if (e.target === sheet && !sheetLocked) closeSheet(); });
+sheet.addEventListener("cancel", e => { if (sheetLocked) e.preventDefault(); });
+
+let toastT;
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2600);
+}
+async function safe(p, ok) {
+  try { await p; ok && toast(ok); return true; }
+  catch (err) { console.error(err); toast("Couldn't save — check your connection and try again"); return false; }
+}
+
+function openWho() {
+  const ps = [...state.players].sort((a, b) => a.name.localeCompare(b.name));
+  openSheet(`<h2>Who's this?</h2><p class="lead">Pick yourself so your weigh-ins and steps land in the right place.</p>
+    <div class="who-list">${ps.map(p => `<button class="who-btn" data-act="pick-me" data-id="${esc(p.id)}">${av(p, "sm")} ${name(p)}${p.pinHash ? "<small>🔒</small>" : ""}</button>`).join("") || `<p class="empty">No one's joined yet — be the first.</p>`}</div>
+    <div class="btn-row"><button class="btn primary" data-act="join">I'm new — add me</button></div>
+    <div class="btn-row"><button class="btn" data-act="spectate">Just looking</button></div>`, null, { locked: true });
+}
+
+function profileForm(p, isNew) {
+  return `<form id="pf" autocomplete="off">
+    <div class="field"><label for="pf-name">Name</label><input id="pf-name" type="text" name="name" maxlength="20" required value="${esc(p?.name || "")}" placeholder="What the lads call you"></div>
+    <div class="field"><span class="lab">Pick your animal</span><div class="emojis">${EMOJIS.map((e, i) => `<label><input type="radio" name="emoji" value="${e}" ${(p ? p.emoji === e : i === 0) ? "checked" : ""}><span>${e}</span></label>`).join("")}</div></div>
+    ${isNew ? `<div class="field"><span class="lab">Starting weight (today's weigh-in)</span>${weightInput("start", null)}</div>` : ""}
+    <div class="field"><span class="lab">Target weight <span class="faint">(optional)</span></span>${weightInput("target", p?.targetKg ?? null)}
+      <div class="hint">Only used for the Targets board.</div></div>
+    <div class="field"><label class="toggle"><span class="k">Share my exact weight<small>Off = the squad sees your changes (kg & %), not your number. Someone determined could still work it out from those.</small></span><input type="checkbox" name="showWeight" ${p?.showWeight ? "checked" : ""}></label></div>
+    <div class="field"><label for="pf-pin">${isNew ? "4-digit PIN" : "New PIN"} <span class="faint">(optional)</span></label><input id="pf-pin" type="password" name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="${!isNew && p?.pinHash ? "Leave blank to keep" : "••••"}">
+      <div class="hint">Stops anyone logging as you by mistake. It's a friendly lock, not bank security.</div></div>
+    ${!isNew && p?.pinHash ? `<div class="field"><label class="toggle"><span class="k">Remove PIN</span><input type="checkbox" name="clearPin"></label></div>` : ""}
+    <p class="err" id="pf-err"></p>
+    <div class="btn-row"><button class="btn primary" type="submit">${isNew ? "Join the squad" : "Save"}</button></div>
+  </form>`;
+}
+
+async function readProfile(form, p, isNew) {
+  const err = $("#pf-err");
+  const nm = form.name.value.trim();
+  if (!nm) { err.textContent = "Need a name."; return null; }
+  if (state.players.some(o => o.id !== p?.id && o.name.toLowerCase() === nm.toLowerCase())) { err.textContent = "Someone already has that name."; return null; }
+  const targetKg = readWeight(form, "target");
+  if (targetKg != null && (targetKg < 30 || targetKg > 350)) { err.textContent = "That target weight doesn't look right."; return null; }
+  let startKg = null;
+  if (isNew) {
+    startKg = readWeight(form, "start");
+    if (startKg == null || startKg < 30 || startKg > 350) { err.textContent = "Pop in a starting weight so you're on the board."; return null; }
+  }
+  const pin = form.pin.value.trim();
+  if (pin && !/^\d{4}$/.test(pin)) { err.textContent = "PIN must be 4 digits."; return null; }
+  const id = p?.id || (nm.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 12) || "p") + "-" + uid().slice(0, 5);
+  let pinHash = p?.pinHash ?? null;
+  if (form.clearPin?.checked) pinHash = null;
+  if (pin) pinHash = await sha256(`${id}:${pin}`);
+  return {
+    player: { id, name: nm, emoji: form.emoji.value || "🎾", targetKg: targetKg == null ? null : targetKg, showWeight: form.showWeight.checked, pinHash, created: p?.created || today(), ts: p?.ts || Date.now() },
+    startKg
+  };
+}
+
+function openJoin() {
+  openSheet(`<h2>Join the squad</h2><p class="lead">Your starting weight is your baseline. Everyone's ranked on % lost, so size doesn't matter.</p>${profileForm(null, true)}`, body => {
+    $("#pf", body).addEventListener("submit", async e => {
+      e.preventDefault();
+      const res = await readProfile(e.target, null, true); if (!res) return;
+      const ok = await safe(store.savePlayer(res.player));
+      if (!ok) return;
+      await safe(store.saveWeighin({ id: `${res.player.id}_${today()}`, pid: res.player.id, date: today(), kg: res.startKg, ts: Date.now() }));
+      meId = res.player.id; prefs.set(ME_KEY, meId); spectator = false;
+      closeSheet(); toast(`Welcome, ${res.player.name}. Belly must go. 🎾`); render();
+    });
+  }, { locked: true });
+}
+
+function openEditProfile() {
+  const p = me(); if (!p) return;
+  openSheet(`<h2>Edit profile</h2><p class="lead">Changes show for everyone straight away.</p>${profileForm(p, false)}`, body => {
+    $("#pf", body).addEventListener("submit", async e => {
+      e.preventDefault();
+      const res = await readProfile(e.target, p, false); if (!res) return;
+      if (await safe(store.savePlayer(res.player), "Profile saved")) closeSheet();
+    });
+  });
+}
+
+function pickMe(id) {
+  const p = player(id); if (!p) return;
+  const done = () => { meId = id; prefs.set(ME_KEY, id); spectator = false; closeSheet(); toast(`Hi ${p.name} 👋`); render(); };
+  if (!p.pinHash) return done();
+  openSheet(`<h2>${esc(p.emoji)} ${name(p)}</h2><p class="lead">Enter your PIN.</p>
+    <form id="pinf"><div class="field"><input class="big" type="password" name="pin" inputmode="numeric" maxlength="4" autofocus></div><p class="err" id="pin-err"></p>
+    <div class="btn-row"><button class="btn" type="button" data-act="who">Back</button><button class="btn primary" type="submit">Unlock</button></div></form>`, body => {
+    $("#pinf", body).addEventListener("submit", async e => {
+      e.preventDefault();
+      if (await sha256(`${id}:${e.target.pin.value.trim()}`) === p.pinHash) done();
+      else { $("#pin-err").textContent = "Wrong PIN."; e.target.pin.value = ""; }
+    });
+  }, { locked: true });
+}
+
+function openLogChooser() {
+  if (!me()) { openWho(); return; }
+  openSheet(`<h2>Log it</h2><p class="lead">What are we adding?</p>
+    <div class="choice"><button data-act="log-weight"><span>⚖️</span>Weigh-in</button><button data-act="log-steps"><span>🥾</span>Steps</button></div>`);
+}
+
+function openLogWeight(date = today()) {
+  const m = me(); if (!m) { openWho(); return; }
+  const mine = state.weighins.filter(e => e.pid === m.id).sort((a, b) => a.date < b.date ? -1 : 1);
+  const existing = d => mine.find(e => e.date === d);
+  const prefill = d => existing(d)?.kg ?? mine.filter(e => e.date < d).pop()?.kg ?? null;
+  const formHtml = d => `<div class="field"><label for="lw-date">Date</label><input id="lw-date" type="date" name="date" value="${d}" max="${today()}"></div>
+    <div class="field"><span class="lab">Weight</span><div id="lw-w">${weightInput("w", prefill(d))}</div>
+    <div class="hint">${existing(d) ? "You already logged this day — saving replaces it." : "Same time, same scales, ideally first thing."}</div></div>`;
+  openSheet(`<h2>⚖️ Weigh in</h2><p class="lead">Moment of truth.</p><form id="lw">${formHtml(date)}<p class="err" id="lw-err"></p>
+    <div class="btn-row"><button class="btn primary" type="submit">Save weigh-in</button></div></form>`, body => {
+    const f = $("#lw", body);
+    f.date.addEventListener("change", () => { const d = f.date.value; if (d) { $("#lw-w").innerHTML = weightInput("w", prefill(d)); $("#lw .hint").textContent = existing(d) ? "You already logged this day — saving replaces it." : "Same time, same scales, ideally first thing."; } });
+    f.addEventListener("submit", async e => {
+      e.preventDefault();
+      const d = f.date.value, kg = readWeight(f, "w");
+      if (!d || d > today()) { $("#lw-err").textContent = "Pick a date that isn't in the future."; return; }
+      if (kg == null || kg < 30 || kg > 350) { $("#lw-err").textContent = "That weight doesn't look right."; return; }
+      const prev = mine.filter(x => x.date < d).pop();
+      const delta = prev ? kg - prev.kg : null;
+      const msg = delta == null ? "Weigh-in saved" : delta < -0.004 ? `${fmtDelta(delta)} since last time. Belly must go 🔥` : delta > 0.004 ? `${fmtDelta(delta)}… the lads will notice 🍩` : "Holding steady. Keep at it.";
+      if (await safe(store.saveWeighin({ id: `${m.id}_${d}`, pid: m.id, date: d, kg, ts: Date.now() }), msg)) closeSheet();
+    });
+  });
+}
+
+function openLogSteps(date = today()) {
+  const m = me(); if (!m) { openWho(); return; }
+  const goal = state.group.stepGoal;
+  const existing = d => state.steps.find(e => e.pid === m.id && e.date === d);
+  openSheet(`<h2>🥾 Log steps</h2><p class="lead">Goal is <b>${fmtInt(goal)}</b> a day. Copy the number from your phone or watch.</p>
+    <form id="ls"><div class="field"><label for="ls-date">Date</label><input id="ls-date" type="date" name="date" value="${date}" max="${today()}"></div>
+    <div class="field"><label for="ls-n">Steps</label><input id="ls-n" class="big" type="number" inputmode="numeric" name="steps" min="0" max="150000" value="${existing(date)?.steps ?? ""}" placeholder="0">
+    <div class="hint" id="ls-hint">${existing(date) ? "Already logged — saving replaces it." : "Update it as the day goes on; the latest number wins."}</div></div>
+    <p class="err" id="ls-err"></p><div class="btn-row"><button class="btn primary" type="submit">Save steps</button></div></form>`, body => {
+    const f = $("#ls", body);
+    f.date.addEventListener("change", () => { const ex = existing(f.date.value); f.steps.value = ex?.steps ?? ""; $("#ls-hint").textContent = ex ? "Already logged — saving replaces it." : "Update it as the day goes on; the latest number wins."; });
+    f.addEventListener("submit", async e => {
+      e.preventDefault();
+      const d = f.date.value, n = parseInt(f.steps.value, 10);
+      if (!d || d > today()) { $("#ls-err").textContent = "Pick a date that isn't in the future."; return; }
+      if (isNaN(n) || n < 0 || n > 150000) { $("#ls-err").textContent = "Enter a step count between 0 and 150,000."; return; }
+      const msg = n >= goal * 2 ? "Double the goal. Absolute machine 🔥" : n >= goal ? "Goal smashed ✅" : `${fmtInt(goal - n)} to go. Get walking 🚶`;
+      if (await safe(store.saveSteps({ id: `${m.id}_${d}`, pid: m.id, date: d, steps: n, ts: Date.now() }), msg)) closeSheet();
+    });
+  });
+}
+
+function openPlayer(id) {
+  const p = player(id); if (!p) return;
+  if (id === meId) { go("me"); return; }
+  const C = compute(), x = C.stats[id];
+  const seeW = canSeeWeight(p);
+  openSheet(`<div class="me-top">${av(p, "lg")}<div style="flex:1;min-width:0"><h2>${name(p)}</h2><div class="me-sub">#${C.ranks.overall[id]} overall · ${x.points} Belly Points</div></div></div>
+    <div class="stat-grid">
+      <div class="stat"><b class="num ${tone(x.chgPct)}">${fmtPct(x.chgPct)}</b><span>Body %</span></div>
+      <div class="stat"><b class="num ${tone(x.chgKg)}">${fmtDelta(x.chgKg)}</b><span>Change</span></div>
+      <div class="stat"><b class="num ${tone(x.week?.pct)}">${fmtPct(x.week?.pct)}</b><span>This week</span></div>
+      <div class="stat"><b class="num">${seeW ? fmtWeight(x.curKg) : "🔒"}</b><span>Current</span></div>
+      <div class="stat"><b class="num">${x.goalStreak} 🔥</b><span>Step streak</span></div>
+      <div class="stat"><b class="num">${fmtInt(x.stepsAvg)}</b><span>Avg steps</span></div>
+    </div>
+    <div class="chart" id="chartPlayer" data-pid="${esc(id)}" style="margin-top:14px"></div>
+    <div class="btn-row">${meId ? `<button class="btn" data-act="compare-go" data-id="${esc(id)}">Compare with me</button>` : ""}<button class="btn" data-act="close">Close</button></div>
+    <div style="margin-top:14px">${historyCard(id, false)}</div>`, () => mountCharts(C));
+}
+
+function openGroupSettings() {
+  const g = state.group;
+  openSheet(`<h2>Season & step goal</h2><p class="lead">These apply to the whole squad — agree it in the group chat first.</p>
+    <form id="gs"><div class="field"><label for="gs-name">Group name</label><input id="gs-name" type="text" name="name" maxlength="30" value="${esc(g.name)}"></div>
+    <div class="field"><label for="gs-goal">Daily step goal</label><input id="gs-goal" type="number" inputmode="numeric" name="goal" min="1000" max="50000" step="500" value="${g.stepGoal}"></div>
+    <div class="field"><label for="gs-start">Season start date</label><input id="gs-start" type="date" name="start" value="${g.startDate}">
+      <div class="hint">Only weigh-ins and steps from this date count. Everyone's baseline is their first weigh-in on or after it. Move it forward to start a fresh season — old entries are kept.</div></div>
+    <p class="err" id="gs-err"></p><div class="btn-row"><button class="btn primary" type="submit">Save for everyone</button></div></form>`, body => {
+    $("#gs", body).addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = e.target, goal = parseInt(f.goal.value, 10);
+      if (isNaN(goal) || goal < 1000 || goal > 50000) { $("#gs-err").textContent = "Step goal must be 1,000–50,000."; return; }
+      if (!f.start.value) { $("#gs-err").textContent = "Pick a start date."; return; }
+      if (await safe(store.saveGroup({ name: f.name.value.trim() || "Belly Must Go", stepGoal: goal, startDate: f.start.value }), "Saved for the squad")) closeSheet();
+    });
+  });
+}
+
+function openPointsInfo() {
+  openSheet(`<h2>How Belly Points work</h2><p class="lead">Rewards losing weight <i>and</i> turning up. Weight is scored on % of your own start weight, so a 70kg and a 130kg player compete on level terms.</p>
+    <ul class="rules">
+      <li><span>Every 1% of body weight lost</span><b>+${POINTS.perPct}</b></li>
+      <li><span>Every 1% gained back</span><b style="color:var(--bad)">−${POINTS.perPct}</b></li>
+      <li><span>Each day you hit the step goal</span><b>+${POINTS.perGoalDay}</b></li>
+      <li><span>Each week you weigh in at least once</span><b>+${POINTS.perWeighWeek}</b></li>
+      <li><span>Biggest Loser of the week (largest % drop)</span><b>+${POINTS.perWeeklyWin}</b></li>
+    </ul>
+    <p class="faint" style="font-size:.82rem;margin-top:14px">Weeks run Monday–Sunday. A week's change is your last weigh-in that week against your last weigh-in before it. Arrows on the boards show movement versus 7 days ago.</p>
+    <div class="btn-row"><button class="btn" data-act="close">Got it</button></div>`);
+}
+
+/* ---------------------------------------------------------------------
+   Routing + events
+   --------------------------------------------------------------------- */
+let route = (location.hash.slice(1) || "home");
+if (!["home", "boards", "trends", "me"].includes(route)) route = "home";
+function go(r) { route = r; history.replaceState(null, "", "#" + r); closeSheet(); render(); window.scrollTo({ top: 0 }); }
+
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-route],[data-act]");
+  if (!t) return;
+  if (t.dataset.route) { if (t.dataset.board) board = t.dataset.board; go(t.dataset.route); return; }
+  const id = t.dataset.id;
+  switch (t.dataset.act) {
+    case "log": openLogChooser(); break;
+    case "log-weight": openLogWeight(); break;
+    case "log-steps": openLogSteps(); break;
+    case "player": openPlayer(id); break;
+    case "board": board = t.dataset.board; render(); break;
+    case "steps-range": stepsRange = t.dataset.range; render(); break;
+    case "compare": compareId = id === meId || id === compareId ? null : id; render(); break;
+    case "compare-go": compareId = id; showTable = false; go("trends"); break;
+    case "chart-table": showTable = !showTable; render(); break;
+    case "unit": unit = t.dataset.unit; prefs.set("unit", unit); render(); break;
+    case "who": spectator = false; openWho(); break;
+    case "pick-me": pickMe(id); break;
+    case "join": openJoin(); break;
+    case "spectate": spectator = true; closeSheet(); render(); break;
+    case "edit-profile": openEditProfile(); break;
+    case "group-settings": openGroupSettings(); break;
+    case "points-info": openPointsInfo(); break;
+    case "close": closeSheet(); break;
+    case "feed-more": feedAll = !feedAll; render(); break;
+    case "edit-weigh": openLogWeight(t.dataset.date); break;
+    case "edit-steps": openLogSteps(t.dataset.date); break;
+    case "del-weigh": if (confirm("Delete this weigh-in?")) safe(store.deleteWeighin(id), "Weigh-in deleted"); break;
+    case "del-steps": if (confirm("Delete this step entry?")) safe(store.deleteSteps(id), "Steps deleted"); break;
+    case "reset-demo": if (!LIVE && confirm("Reset the demo back to the sample crew?")) { prefs.del(ME_KEY); meId = null; spectator = false; store.reset(); } break;
+  }
+});
+
+let resizeT;
+window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(() => state.ready && mountCharts(compute()), 150); });
+// roll over to a new day if the app is left open past midnight
+let lastDay = today();
+document.addEventListener("visibilitychange", () => { if (!document.hidden && today() !== lastDay) { lastDay = today(); render(); } });
+
+(async () => {
+  render();
+  try {
+    store = LIVE ? await makeFirestoreStore(render) : makeDemoStore(render);
+  } catch (err) {
+    console.error(err);
+    $("#view").innerHTML = `<div class="card"><h2>Couldn't connect</h2><p class="faint">Check your connection, and that Anonymous sign-in is enabled in Firebase. Then refresh.</p></div>`;
+  }
+})();
+</script>
+</body>
+</html>
