@@ -60,6 +60,18 @@ service cloud.firestore {
         allow delete: if signedIn();
       }
 
+      match /stepTotals/{entryId} {
+        allow read: if signedIn();
+        allow create, update: if signedIn()
+          && request.resource.data.keys().hasOnly(['pid', 'date', 'total', 'ts'])
+          && isDate(request.resource.data.date)
+          && entryId == request.resource.data.pid + '_' + request.resource.data.date
+          && exists(/databases/$(database)/documents/groups/$(groupId)/players/$(request.resource.data.pid))
+          && request.resource.data.total is int
+          && request.resource.data.total >= 0 && request.resource.data.total <= 20000000;
+        allow delete: if signedIn();
+      }
+
       match /steps/{entryId} {
         allow read: if signedIn();
         allow create, update: if signedIn()

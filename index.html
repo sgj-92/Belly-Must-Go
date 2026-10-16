@@ -688,7 +688,7 @@ function readWeight(form, name) {
 /* ---------------------------------------------------------------------
    State + stores
    --------------------------------------------------------------------- */
-const state = { group: null, players: [], weighins: [], steps: [], sessions: [], ready: false };
+const state = { group: null, players: [], weighins: [], steps: [], sessions: [], stepTotals: [], ready: false };
 const TRAINING_KINDS = ["Gym", "Run", "Padel", "Swim", "Cycle", "Class", "Walk", "Football"];
 const defaultGroup = () => ({ name: "Belly Must Go", stepGoal: 10000, startDate: today() });
 let store;
@@ -706,6 +706,7 @@ function makeDemoStore(onChange) {
     state.weighins = data.weighins.map(e => ({ ...e }));
     state.steps = data.steps.map(e => ({ ...e }));
     state.sessions = (data.sessions || []).map(e => ({ ...e }));
+    state.stepTotals = (data.stepTotals || []).map(e => ({ ...e }));
     state.ready = true;
     onChange();
   };
@@ -721,6 +722,8 @@ function makeDemoStore(onChange) {
     deleteSteps: id => write(() => { data.steps = data.steps.filter(x => x.id !== id); }),
     saveSession: e => write(() => { data.sessions = data.sessions || []; upsert(data.sessions, e); }),
     deleteSession: id => write(() => { data.sessions = (data.sessions || []).filter(x => x.id !== id); }),
+    saveStepTotal: e => write(() => { data.stepTotals = data.stepTotals || []; upsert(data.stepTotals, e); }),
+    deleteStepTotal: id => write(() => { data.stepTotals = (data.stepTotals || []).filter(x => x.id !== id); }),
     reset: () => { try { localStorage.removeItem(KEY); } catch {} data = seedDemo(); persist(); publish(); }
   };
 }
@@ -770,7 +773,7 @@ async function makeFirestoreStore(onChange) {
   await signInAnonymously(getAuth(app));
 
   const gref = doc(db, "groups", GROUP_ID);
-  const loaded = { group: false, players: false, weighins: false, steps: false, sessions: false };
+  const loaded = { group: false, players: false, weighins: false, steps: false, sessions: false, stepTotals: false };
   const check = () => { state.ready = Object.values(loaded).every(Boolean); onChange(); };
   const onErr = err => { console.error(err); toast("Couldn't reach the database — check your connection"); };
 
@@ -778,13 +781,13 @@ async function makeFirestoreStore(onChange) {
     if (!snap.exists()) { setDoc(gref, defaultGroup()).catch(onErr); return; }
     state.group = snap.data(); loaded.group = true; check();
   }, onErr);
-  for (const col of ["players", "weighins", "steps", "sessions"]) {
+  for (const col of ["players", "weighins", "steps", "sessions", "stepTotals"]) {
     onSnapshot(collection(gref, col), qs => {
       state[col] = qs.docs.map(d => ({ id: d.id, ...d.data() }));
       loaded[col] = true; check();
     }, err => {
       // training is optional: if its rules aren't published yet, carry on without it
-      if (col === "sessions") { console.warn(err); loaded.sessions = true; check(); return; }
+      if (col === "sessions" || col === "stepTotals") { console.warn(err); loaded[col] = true; check(); return; }
       onErr(err);
     });
   }
@@ -797,7 +800,9 @@ async function makeFirestoreStore(onChange) {
     saveSteps: e => setDoc(doc(gref, "steps", e.id), clean(e)),
     deleteSteps: id => deleteDoc(doc(gref, "steps", id)),
     saveSession: e => setDoc(doc(gref, "sessions", e.id), clean(e)),
-    deleteSession: id => deleteDoc(doc(gref, "sessions", id))
+    deleteSession: id => deleteDoc(doc(gref, "sessions", id)),
+    saveStepTotal: e => setDoc(doc(gref, "stepTotals", e.id), clean(e)),
+    deleteStepTotal: id => deleteDoc(doc(gref, "stepTotals", id))
   };
 }
 
@@ -814,6 +819,29 @@ function weekChange(w, wk) {
   const cur = inWeek[inWeek.length - 1];
   if (ref === cur) return null;
   return { kg: cur.kg - ref.kg, pct: (cur.kg - ref.kg) / ref.kg * 100 };
+}
+
+/* A step total is "steps since the campaign start, up to and including this date".
+   Each total covers the days since the previous one; whatever the logged days don't
+   account for is spread evenly over that period's unlogged days. One goal day is
+   credited per full goal's worth of spread steps (never more than the days covered). */
+function spreadTotals(pid, sReal, start, asOf, goal) {
+  const cps = state.stepTotals.filter(e => e.pid === pid && e.date >= start && e.date <= asOf).sort((a, b) => a.date < b.date ? -1 : 1);
+  const est = new Map();
+  let credit = 0, prevDate = addDays(start, -1), prevTotal = 0;
+  for (const c of cps) {
+    let logged = 0; const gaps = [];
+    for (let d = addDays(prevDate, 1); d <= c.date; d = addDays(d, 1)) sReal.has(d) ? logged += sReal.get(d) : gaps.push(d);
+    const rest = c.total - prevTotal - logged;
+    if (rest > 0 && gaps.length) {
+      // whole steps per day, with the remainder on the earliest days so the period adds up exactly
+      const base = Math.floor(rest / gaps.length), extra = rest - base * gaps.length;
+      gaps.forEach((d, i) => est.set(d, base + (i < extra ? 1 : 0)));
+      credit += Math.min(gaps.length, Math.floor(rest / goal));
+    }
+    prevDate = c.date; prevTotal = c.total;
+  }
+  return { est, credit };
 }
 
 function compute(asOf = today()) {
@@ -844,8 +872,10 @@ function compute(asOf = today()) {
 
   const stats = {};
   for (const p of state.players) {
-    const { w, s } = raw[p.id];
-    const st = { p, w, s };
+    const { w, s: sReal } = raw[p.id];
+    const { est, credit } = spreadTotals(p.id, sReal, start, asOf, goal);
+    const s = new Map([...est, ...sReal]);
+    const st = { p, w, s, sReal, est };
     st.startKg = w.length ? w[0].kg : null;
     st.curKg = w.length ? w[w.length - 1].kg : null;
     st.lowKg = w.length ? Math.min(...w.map(e => e.kg)) : null;
@@ -869,10 +899,13 @@ function compute(asOf = today()) {
     st.daysActive = Math.max(1, dayDiff(join, asOf) + 1);
     st.stepsToday = s.get(asOf) ?? null;
     let wkTotal = 0, total = 0, goalDays = 0;
-    for (const [d, v] of s) { total += v; if (d >= thisWk) wkTotal += v; if (v >= goal) goalDays++; }
+    for (const [d, v] of s) { total += v; if (d >= thisWk) wkTotal += v; if (v >= goal && !est.has(d)) goalDays++; }
+    goalDays += credit;
     st.stepsWeek = wkTotal; st.stepsTotal = total; st.goalDays = goalDays;
     st.stepsAvg = total / st.daysActive;
-    st.bestDay = s.size ? Math.max(...s.values()) : 0;
+    st.bestDay = sReal.size ? Math.max(...sReal.values()) : 0;
+    const lastTotal = state.stepTotals.filter(e => e.pid === p.id && e.date >= start && e.date <= asOf).sort((a, b) => a.date < b.date ? 1 : -1)[0];
+    st.lastTotal = lastTotal || null;
     let d = asOf; if (!((s.get(d) ?? 0) >= goal)) d = addDays(d, -1);
     let gs = 0; while ((s.get(d) ?? 0) >= goal) { gs++; d = addDays(d, -1); }
     st.goalStreak = gs;
@@ -1104,7 +1137,7 @@ function buildFeed(C) {
   }
   // step goal hits grouped per day; double-goal days called out individually
   const byDay = new Map();
-  for (const x of C.list) for (const [date, v] of x.s) {
+  for (const x of C.list) for (const [date, v] of x.sReal) {
     if (v >= C.goal * 2) ev.push({ p: x.p, date, ts: 1, html: `walked <b>${fmtInt(v)}</b> steps, double the goal` });
     else if (v >= C.goal) { if (!byDay.has(date)) byDay.set(date, []); byDay.get(date).push(x.p); }
   }
@@ -1305,6 +1338,7 @@ function renderMe(C) {
     html += `<section class="card"><div class="card-h"><h2>Manage the group</h2><span class="meta">Admin on this device</span></div><div class="set">
       <button class="set-row" data-act="group-settings"><span class="k">Campaign start & step goal<small>Only entries from the start date count</small></span><span class="v">${esc(fmtDate(state.group.startDate))} ›</span></button>
       <button class="set-row" data-act="admin-add"><span class="k">Add a player<small>For people who haven't joined yet</small></span><span class="v">›</span></button>
+      <button class="set-row" data-act="step-total"><span class="k">Update step totals<small>Total since the start, up to a date</small></span><span class="v">›</span></button>
       <button class="set-row" data-act="admin-catchup"><span class="k">Catch up entries<small>Fill in steps and weigh-ins, day by day</small></span><span class="v">›</span></button>
       ${state.players.length ? `<div style="padding:8px 0 4px"><div class="eyebrow" style="margin-bottom:8px">Players</div><div class="dodgers">${[...state.players].sort((a, b) => a.name.localeCompare(b.name)).map(pl => `<button class="dodger" data-act="admin-player" data-id="${esc(pl.id)}">${av(pl)}${name(pl)}</button>`).join("")}</div></div>` : ""}
       <button class="set-row" data-act="admin-off"><span class="k">Hide admin tools on this device</span><span class="v">›</span></button>
@@ -1435,10 +1469,10 @@ function lineChart(el, { series, fmtY, fmtTip, zero = true, height = 230 }) {
   svgEl.addEventListener("pointerleave", leave);
 }
 
-function stepsChart(el, pid, goal) {
+function stepsChart(el, ps, goal) {
   const end = today(), days = [];
   for (let i = 13; i >= 0; i--) days.push(addDays(end, -i));
-  const map = new Map(state.steps.filter(e => e.pid === pid).map(e => [e.date, e.steps]));
+  const map = ps.s;
   const vals = days.map(d => map.get(d) ?? null);
   const W = Math.max(280, el.clientWidth), H = 180, M = { t: 12, r: 8, b: 24, l: 40 };
   const ymax = Math.max(goal * 1.15, ...vals.map(v => v || 0)) * 1.05;
@@ -1454,7 +1488,7 @@ function stepsChart(el, pid, goal) {
     const x = M.l + bw * i + 2, w = Math.max(2, bw - 4);
     if (v) {
       const y = Y(v), h = Y(0) - y, r = Math.min(4, w / 2, h);
-      svg += `<path d="M${x},${Y(0)}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${Y(0)}Z" fill="${v >= goal ? "var(--good)" : "var(--series-1)"}"/>`;
+      svg += `<path d="M${x},${Y(0)}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${Y(0)}Z" fill="${v >= goal ? "var(--good)" : "var(--series-1)"}" ${ps.est.has(days[i]) ? `opacity=".45"` : ""}/>`;
     }
     svg += `<rect data-i="${i}" x="${M.l + bw * i}" y="${M.t}" width="${bw}" height="${H - M.t - M.b}" fill="transparent"/>`;
   });
@@ -1466,7 +1500,7 @@ function stepsChart(el, pid, goal) {
   svgEl.addEventListener("pointermove", ev => {
     const i = ev.target.dataset?.i; if (i == null) return;
     const r = svgEl.getBoundingClientRect();
-    tip.innerHTML = `<div class="d">${esc(relDay(days[i]))}</div><div><b class="num">${vals[i] == null ? "Not logged" : fmtInt(vals[i]) + " steps"}</b>${vals[i] >= goal ? ` <span class="good">✓</span>` : ""}</div>`;
+    tip.innerHTML = `<div class="d">${esc(relDay(days[i]))}</div><div><b class="num">${vals[i] == null ? "Not logged" : (ps.est.has(days[i]) ? "≈ " : "") + fmtInt(vals[i]) + " steps"}</b>${ps.est.has(days[i]) ? `<div class="faint">from a running total</div>` : ""}${vals[i] >= goal ? ` <span class="good">✓</span>` : ""}</div>`;
     tip.style.display = "block";
     const cx = (M.l + bw * i + bw / 2) / W * r.width;
     tip.style.left = Math.max(0, Math.min(r.width - tip.offsetWidth, cx - tip.offsetWidth / 2)) + "px";
@@ -1486,7 +1520,7 @@ function mountCharts(C) {
     lineChart(g, { series: C.list.map(x => weightSeries(x, id => id === meId ? "me" : id === cmp ? "cmp" : "other")), fmtY: pctFmt });
   }
   const s = $("#chartSteps");
-  if (s && meId) stepsChart(s, meId, C.goal);
+  if (s && meId) stepsChart(s, C.stats[meId], C.goal);
   const pm = $("#chartMe") || $("#chartPlayer");
   if (pm) {
     const x = C.stats[pm.dataset.pid || meId];
@@ -1646,6 +1680,47 @@ function openLogWeight(date = today()) {
   });
 }
 
+/* ---------- Step totals (periodic running totals) ---------- */
+function openStepTotal(pid) {
+  const ps = [...state.players].sort((a, b) => a.name.localeCompare(b.name));
+  const pick = adminMode;
+  pid = player(pid) ? pid : meId && player(meId) ? meId : ps[0]?.id;
+  if (!pid) { toast("Add a player first"); return; }
+  const C = compute(), x = C.stats[pid], start = state.group.startDate;
+  const cps = state.stepTotals.filter(e => e.pid === pid).sort((a, b) => a.date < b.date ? 1 : -1);
+  openSheet(`<h2>Step total</h2><p class="lead">Total steps since the campaign started on <b>${esc(fmtDate(start))}</b>, up to a date. Days nobody logged are filled in evenly, so you can update this every week or two instead of daily.</p>
+    <form id="st">
+      ${pick ? `<div class="field"><label for="st-p">Player</label><select id="st-p">${ps.map(p => `<option value="${esc(p.id)}" ${p.id === pid ? "selected" : ""}>${name(p)}</option>`).join("")}</select></div>` : ""}
+      <div class="field"><label for="st-date">Up to and including</label><input id="st-date" type="date" name="date" value="${today()}" min="${start}" max="${today()}"></div>
+      <div class="field"><label for="st-n">Total steps since ${esc(fmtDate(start))}</label><input id="st-n" class="big" type="text" inputmode="numeric" name="total" placeholder="0" autocomplete="off">
+        <div class="hint" id="st-hint">Currently counted: ${fmtInt(x.stepsTotal)} steps${x.lastTotal ? ` (last total ${fmtInt(x.lastTotal.total)} on ${esc(fmtDate(x.lastTotal.date))})` : ""}.</div></div>
+      <p class="err" id="st-err"></p>
+      <div class="btn-row"><button class="btn primary" type="submit">Save total</button></div>
+    </form>
+    ${cps.length ? `<div class="card-h" style="margin:20px 0 6px"><h2>Totals so far</h2></div><div class="hist">${cps.map(c => `<div class="hrow">${dateCell(c.date)}<div class="r"><span class="num">${fmtInt(c.total)}</span><button class="icon-btn" data-act="del-total" data-id="${esc(c.id)}" aria-label="Delete">✕</button></div></div>`).join("")}</div>` : ""}`, body => {
+    if (pick) $("#st-p", body).addEventListener("change", e => openStepTotal(e.target.value));
+    const f = $("#st", body);
+    const prevTotal = d => state.stepTotals.filter(e => e.pid === pid && e.date < d && e.date >= start).sort((a, b) => a.date < b.date ? 1 : -1)[0];
+    const nextTotal = d => state.stepTotals.filter(e => e.pid === pid && e.date > d).sort((a, b) => a.date < b.date ? -1 : 1)[0];
+    f.total.addEventListener("input", () => {
+      const n = parseInt(f.total.value.replace(/[,\s]/g, ""), 10), d = f.date.value, pv = prevTotal(d);
+      if (isNaN(n) || !d) return;
+      const from = pv ? addDays(pv.date, 1) : start, span = dayDiff(from, d) + 1, gained = n - (pv ? pv.total : 0);
+      $("#st-hint").textContent = gained >= 0 ? `${fmtInt(gained)} steps over ${span} day${span === 1 ? "" : "s"} since ${pv ? "the last total" : "the start"}: about ${fmtInt(gained / span)} a day.` : "That's lower than the previous total.";
+    });
+    f.addEventListener("submit", async e => {
+      e.preventDefault();
+      const err = $("#st-err"), d = f.date.value, n = parseInt(f.total.value.replace(/[,\s]/g, ""), 10);
+      if (!d || d > today() || d < start) { err.textContent = "Pick a date between the campaign start and today."; return; }
+      if (isNaN(n) || n < 0 || n > 20000000) { err.textContent = "Enter the total number of steps."; return; }
+      const pv = prevTotal(d), nx = nextTotal(d);
+      if (pv && n < pv.total) { err.textContent = `That's less than the ${fmtInt(pv.total)} recorded on ${fmtDate(pv.date)}.`; return; }
+      if (nx && n > nx.total) { err.textContent = `That's more than the ${fmtInt(nx.total)} recorded later, on ${fmtDate(nx.date)}.`; return; }
+      if (await safe(store.saveStepTotal({ id: `${pid}_${d}`, pid, date: d, total: n, ts: Date.now() }), `Total saved for ${player(pid).name}`)) openStepTotal(pid);
+    });
+  });
+}
+
 /* ---------- Admin: add players, catch up entries ---------- */
 function openAdminAdd() {
   const start = state.group.startDate;
@@ -1784,7 +1859,8 @@ function openLogSteps(date = today()) {
     <form id="ls"><div class="field"><label for="ls-date">Date</label><input id="ls-date" type="date" name="date" value="${date}" max="${today()}"></div>
     <div class="field"><label for="ls-n">Steps</label><input id="ls-n" class="big" type="number" inputmode="numeric" name="steps" min="0" max="150000" value="${existing(date)?.steps ?? ""}" placeholder="0">
     <div class="hint" id="ls-hint">${existing(date) ? "Already logged — saving replaces it." : "Update it as the day goes on; the latest number wins."}</div></div>
-    <p class="err" id="ls-err"></p><div class="btn-row"><button class="btn primary" type="submit">Log steps</button></div></form>`, body => {
+    <p class="err" id="ls-err"></p><div class="btn-row"><button class="btn primary" type="submit">Log steps</button></div></form>
+    <div class="btn-row"><button class="btn" data-act="step-total" data-id="${esc(m.id)}">Enter a running total instead</button></div>`, body => {
     const f = $("#ls", body);
     f.date.addEventListener("change", () => { const ex = existing(f.date.value); f.steps.value = ex?.steps ?? ""; $("#ls-hint").textContent = ex ? "Already logged — saving replaces it." : "Update it as the day goes on; the latest number wins."; });
     f.addEventListener("submit", async e => {
@@ -1817,7 +1893,7 @@ function openPlayer(id) {
     </div>
     <div class="chart" id="chartPlayer" data-pid="${esc(id)}" style="margin-top:14px"></div>
     <p class="faint" style="font-size:.82rem;margin:12px 0 0">${x.trainWeek} training session${x.trainWeek === 1 ? "" : "s"} this week · ${x.trainTotal} this campaign</p>
-    ${adminMode ? `<div class="btn-row"><button class="btn" data-act="admin-catchup" data-id="${esc(id)}">Catch up entries</button><button class="btn" data-act="admin-edit" data-id="${esc(id)}">Edit details</button></div>` : ""}
+    ${adminMode ? `<div class="btn-row"><button class="btn" data-act="step-total" data-id="${esc(id)}">Step total</button><button class="btn" data-act="admin-catchup" data-id="${esc(id)}">Catch up</button><button class="btn" data-act="admin-edit" data-id="${esc(id)}">Edit details</button></div>` : ""}
     <div class="btn-row">${meId ? `<button class="btn" data-act="compare-go" data-id="${esc(id)}">Compare with me</button>` : ""}<button class="btn" data-act="close">Close</button></div>
     <div style="margin-top:14px">${historyCard(id, false)}</div>`, () => mountCharts(C));
 }
@@ -1885,6 +1961,8 @@ document.addEventListener("click", async e => {
     case "spectate": spectator = true; closeSheet(); render(); break;
     case "edit-profile": openEditProfile(); break;
     case "admin-add": openAdminAdd(); break;
+    case "step-total": openStepTotal(id); break;
+    case "del-total": if (confirm("Delete this step total?")) { const t = state.stepTotals.find(e => e.id === id); safe(store.deleteStepTotal(id), "Total deleted").then(() => t && openStepTotal(t.pid)); } break;
     case "admin-catchup": openCatchup(id); break;
     case "admin-edit": openEditProfile(id); break;
     case "admin-player": openPlayer(id); break;

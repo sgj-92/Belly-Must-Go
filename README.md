@@ -102,6 +102,11 @@ device (`?admin=off`, or the row at the bottom of that section, hides it again).
 
 - **Campaign start & step goal**
 - **Add a player** for someone who hasn't joined, with an optional back-dated first weigh-in
+- **Update step totals**: enter a player's total steps since the campaign start, up to a date (also
+  available to each player from **Log steps → Enter a running total instead**). Whatever their
+  logged days don't account for is spread evenly over the unlogged days in that period, so weekly
+  totals, averages and today's race keep working. Each full goal's worth of spread steps counts as
+  one goal day. Totals must only go up over time; spread days show faded on the steps chart.
 - **Catch up entries**: a day-by-day grid of steps and weight for any player, prefilled with what's
   already logged. Blank boxes are skipped, clearing a box deletes that entry, and nothing saves if
   any box looks wrong. Weight uses the device's units (`st lb` as two numbers, e.g. `14 2.5`).
@@ -123,6 +128,7 @@ groups/belly-must-go               { name, stepGoal, startDate }
   weighins/{playerId}_{YYYY-MM-DD} { pid, date, kg, ts }      // one per player per day
   sessions/{playerId}_{date}_{rnd} { pid, date, text, ts }    // training, any number per day
   steps/{playerId}_{YYYY-MM-DD}    { pid, date, steps, ts }   // latest number wins
+  stepTotals/{playerId}_{date}     { pid, date, total, ts }   // running total since campaign start
 ```
 
 Weights are always stored in kg; kg / st & lb / lb is a per-device display setting.
