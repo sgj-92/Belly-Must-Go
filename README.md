@@ -85,11 +85,11 @@ and saves to the browser only. Open `index.html` via any static server
 4. **Firestore → Rules:** paste the contents of `firestore.rules` and publish.
 5. **Project settings → Your apps → Web (`</>`)**: register an app and copy the `firebaseConfig` object.
 6. Paste it into `FIREBASE_CONFIG` at the top of the script in `index.html`, then commit.
-7. Host it. **GitHub Pages:** repo **Settings → Pages → Deploy from branch → `main` / root**.
-   Vercel also works, the same way as the other apps.
+7. Host it on **Vercel** (same as the other apps): import the repo with no framework preset and no build;
+   `vercel.json` serves the root folder. Production is `https://belly.sgj.luxe`.
 8. Share the link in the group chat. On iPhone: Share → **Add to Home Screen**.
 
-Once live, the app creates the group with a 10,000-step goal and a season starting today.
+Once live, the app creates the group with a 10,000-step goal and a campaign starting today.
 Anyone can change either under **Warrior → Campaign & march goal**.
 
 ### Campaigns
