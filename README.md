@@ -35,6 +35,7 @@ The leader's torso is cast in **gold**. Anyone who gained weight this week gets 
 | **Weight lost** | Raw kg / lb |
 | **This week** | This week's change, plus Honours for past weeks |
 | **Steps** | Steps today, this week, or daily average against the shared goal |
+| **Training** | Sessions logged this week and this campaign (gym, run, padel… typed freely) |
 | **Streaks** | Days in a row hitting the step goal, and weeks in a row on the scales |
 | **Targets** | Progress towards each person's own target weight |
 
@@ -106,6 +107,7 @@ forward. Old entries are kept.
 groups/belly-must-go               { name, stepGoal, startDate }
   players/{id}                     { name, emoji, targetKg, showWeight, pinHash, created, ts }
   weighins/{playerId}_{YYYY-MM-DD} { pid, date, kg, ts }      // one per player per day
+  sessions/{playerId}_{date}_{rnd} { pid, date, text, ts }    // training, any number per day
   steps/{playerId}_{YYYY-MM-DD}    { pid, date, steps, ts }   // latest number wins
 ```
 

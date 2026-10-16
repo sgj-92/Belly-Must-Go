@@ -430,6 +430,8 @@
   .choice{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .choice button{ padding: 26px 12px; border-radius: 14px; background: transparent; border: 1px solid var(--border-strong); cursor: pointer; font-family: var(--f-head); font-weight: 600; font-size: 1.5rem; }
   .choice button span{ display: block; font-family: var(--f-body); font-size: 0.74rem; font-weight: 400; color: var(--text-faint); margin-top: 4px; }
+  .kinds{ display: flex; flex-wrap: wrap; gap: 6px; }
+  .kinds .chip{ padding: 6px 12px; font-size: 0.82rem; }
   .err{ color: var(--bad); font-size: 0.82rem; margin: -4px 0 12px; min-height: 1em; }
   .rules{ margin: 0; padding: 0; list-style: none; }
   .rules li{ display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 0.9rem; }
@@ -673,13 +675,14 @@ function readWeight(form, name) {
 /* ---------------------------------------------------------------------
    State + stores
    --------------------------------------------------------------------- */
-const state = { group: null, players: [], weighins: [], steps: [], ready: false };
+const state = { group: null, players: [], weighins: [], steps: [], sessions: [], ready: false };
+const TRAINING_KINDS = ["Gym", "Run", "Padel", "Swim", "Cycle", "Class", "Walk", "Football"];
 const defaultGroup = () => ({ name: "Belly Must Go", stepGoal: 10000, startDate: today() });
 let store;
 
 /* ---- Demo store: localStorage, seeded with sample players ---- */
 function makeDemoStore(onChange) {
-  const KEY = "bmg.demo.v2";
+  const KEY = "bmg.demo.v3";
   let data;
   try { data = JSON.parse(localStorage.getItem(KEY)); } catch {}
   if (!data || !data.group) data = seedDemo();
@@ -689,6 +692,7 @@ function makeDemoStore(onChange) {
     state.players = data.players.map(p => ({ ...p }));
     state.weighins = data.weighins.map(e => ({ ...e }));
     state.steps = data.steps.map(e => ({ ...e }));
+    state.sessions = (data.sessions || []).map(e => ({ ...e }));
     state.ready = true;
     onChange();
   };
@@ -702,6 +706,8 @@ function makeDemoStore(onChange) {
     deleteWeighin: id => write(() => { data.weighins = data.weighins.filter(x => x.id !== id); }),
     saveSteps: e => write(() => upsert(data.steps, e)),
     deleteSteps: id => write(() => { data.steps = data.steps.filter(x => x.id !== id); }),
+    saveSession: e => write(() => { data.sessions = data.sessions || []; upsert(data.sessions, e); }),
+    deleteSession: id => write(() => { data.sessions = (data.sessions || []).filter(x => x.id !== id); }),
     reset: () => { try { localStorage.removeItem(KEY); } catch {} data = seedDemo(); persist(); publish(); }
   };
 }
@@ -718,7 +724,8 @@ function seedDemo() {
     { name: "Priya", emoji: "🏹", kg: 68, rate: -0.38, target: null, show: false, steps: 12100 },
     { name: "Gaz", emoji: "🔱", kg: 133, rate: -1.1, target: 110, show: false, steps: 9600 }
   ];
-  const players = [], weighins = [], steps = [];
+  const players = [], weighins = [], steps = [], sessions = [];
+  const notes = ["Gym — legs", "Gym — push day", "Run 5k", "Padel, 2 hours", "Run — intervals", "Gym — back & biceps", "Swim 40 lengths", "Padel doubles", "Spin class", "Long walk with the dog"];
   cast.forEach((c, i) => {
     const id = "demo" + i;
     players.push({ id, name: c.name, emoji: c.emoji, targetKg: c.target, showWeight: c.show, pinHash: null, created: start, ts: Date.now() });
@@ -732,9 +739,10 @@ function seedDemo() {
         const n = Math.max(1500, Math.round(c.steps + (rnd() - 0.45) * 7000 + (rnd() < 0.05 ? 9000 : 0)));
         if (!(d === 41 && rnd() < 0.4)) steps.push({ id: `${id}_${date}`, pid: id, date, steps: d === 41 ? Math.round(n * 0.6) : n, ts: Date.now() - (41 - d) * 864e5 });
       }
+      if (rnd() < (i === 3 ? 0.12 : 0.42)) sessions.push({ id: `${id}_${date}_s`, pid: id, date, text: notes[Math.floor(rnd() * notes.length)], ts: Date.now() - (41 - d) * 864e5 + 1 });
     }
   });
-  return { group: { name: "Belly Must Go", stepGoal: 10000, startDate: start }, players, weighins, steps };
+  return { group: { name: "Belly Must Go", stepGoal: 10000, startDate: start }, players, weighins, steps, sessions };
 }
 
 /* ---- Live store: Firestore with anonymous auth ---- */
@@ -749,7 +757,7 @@ async function makeFirestoreStore(onChange) {
   await signInAnonymously(getAuth(app));
 
   const gref = doc(db, "groups", GROUP_ID);
-  const loaded = { group: false, players: false, weighins: false, steps: false };
+  const loaded = { group: false, players: false, weighins: false, steps: false, sessions: false };
   const check = () => { state.ready = Object.values(loaded).every(Boolean); onChange(); };
   const onErr = err => { console.error(err); toast("Couldn't reach the database — check your connection"); };
 
@@ -757,11 +765,15 @@ async function makeFirestoreStore(onChange) {
     if (!snap.exists()) { setDoc(gref, defaultGroup()).catch(onErr); return; }
     state.group = snap.data(); loaded.group = true; check();
   }, onErr);
-  for (const col of ["players", "weighins", "steps"]) {
+  for (const col of ["players", "weighins", "steps", "sessions"]) {
     onSnapshot(collection(gref, col), qs => {
       state[col] = qs.docs.map(d => ({ id: d.id, ...d.data() }));
       loaded[col] = true; check();
-    }, onErr);
+    }, err => {
+      // training is optional: if its rules aren't published yet, carry on without it
+      if (col === "sessions") { console.warn(err); loaded.sessions = true; check(); return; }
+      onErr(err);
+    });
   }
   const clean = ({ id, ...rest }) => rest;
   return {
@@ -770,7 +782,9 @@ async function makeFirestoreStore(onChange) {
     saveWeighin: e => setDoc(doc(gref, "weighins", e.id), clean(e)),
     deleteWeighin: id => deleteDoc(doc(gref, "weighins", id)),
     saveSteps: e => setDoc(doc(gref, "steps", e.id), clean(e)),
-    deleteSteps: id => deleteDoc(doc(gref, "steps", id))
+    deleteSteps: id => deleteDoc(doc(gref, "steps", id)),
+    saveSession: e => setDoc(doc(gref, "sessions", e.id), clean(e)),
+    deleteSession: id => deleteDoc(doc(gref, "sessions", id))
   };
 }
 
@@ -796,6 +810,8 @@ function compute(asOf = today()) {
   for (const p of state.players) raw[p.id] = { w: [], s: new Map() };
   for (const e of state.weighins) if (raw[e.pid] && e.date >= start && e.date <= asOf) raw[e.pid].w.push(e);
   for (const e of state.steps) if (raw[e.pid] && e.date >= start && e.date <= asOf) raw[e.pid].s.set(e.date, e.steps);
+  for (const id in raw) raw[id].t = [];
+  for (const e of state.sessions) if (raw[e.pid] && e.date >= start && e.date <= asOf) raw[e.pid].t.push(e);
   for (const id in raw) raw[id].w.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
 
   // Completed weeks → Biggest Loser / Biggest Gainer awards
@@ -824,6 +840,10 @@ function compute(asOf = today()) {
     st.chgPct = w.length ? st.chgKg / st.startKg * 100 : null;
     st.lastWeigh = w.length ? w[w.length - 1].date : null;
     st.daysSinceWeigh = st.lastWeigh ? dayDiff(st.lastWeigh, asOf) : null;
+    st.t = raw[p.id].t;
+    st.trainWeek = st.t.filter(e => e.date >= thisWk).length;
+    st.trainTotal = st.t.length;
+    st.trainDays = new Set(st.t.map(e => e.date)).size;
     st.week = weekChange(w, thisWk);
     st.target = p.targetKg && st.startKg && p.targetKg < st.startKg
       ? { kg: p.targetKg, prog: Math.max(0, Math.min(1, (st.startKg - st.curKg) / (st.startKg - p.targetKg))), toGo: st.curKg - p.targetKg }
@@ -1048,7 +1068,8 @@ function renderMyCard(C) {
     <div class="forge"><div style="display:flex;justify-content:space-between"><span>Steps today</span><span class="num">${x.stepsToday == null ? "—" : fmtInt(x.stepsToday)} / ${fmtInt(goal)}</span></div>
       <div class="bar ${stepsPct >= 100 ? "hit" : ""}"><i style="width:${stepsPct}%"></i></div></div>
     ${nudge ? `<div class="nudge">${nudge}</div>` : ""}
-    <div class="btn-row"><button class="btn primary" data-act="log-weight">Weigh in</button><button class="btn" data-act="log-steps">Log steps</button></div>
+    <div class="btn-row"><button class="btn primary" data-act="log-weight">Weigh in</button><button class="btn" data-act="log-steps">Steps</button><button class="btn" data-act="log-training">Training</button></div>
+    <p class="faint" style="font-size:.76rem;margin:10px 0 0;text-align:center">${x.trainWeek ? `${x.trainWeek} training session${x.trainWeek === 1 ? "" : "s"} this week` : "No training logged this week"}</p>
   </section>`;
 }
 
@@ -1079,6 +1100,9 @@ function buildFeed(C) {
     const joined = names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0];
     ev.push({ p: { mark: "✓" }, date, ts: 0, full: `${joined} hit the step goal` });
   }
+  for (const x of C.list) for (const e of x.t) {
+    ev.push({ p: x.p, date: e.date, ts: e.ts || 0, html: `trained: <b>${esc(e.text)}</b>` });
+  }
   for (const wk of C.weeks) {
     for (const c of wk.winners) ev.push({ p: player(c.pid), date: addDays(wk.wk, 6), ts: 2, html: `took <b>Champion</b> of week ${wk.n} (${fmtPct(c.ch.pct)})` });
   }
@@ -1092,7 +1116,7 @@ let board = "overall";
 let stepsRange = "today";
 const BOARDS = [
   ["overall", "Standings"], ["pct", "Body %"], ["kg", "Weight lost"], ["week", "This week"],
-  ["steps", "Steps"], ["streaks", "Streaks"], ["target", "Targets"]
+  ["steps", "Steps"], ["training", "Training"], ["streaks", "Streaks"], ["target", "Targets"]
 ];
 
 function renderBoards(C) {
@@ -1161,6 +1185,14 @@ function renderBoards(C) {
           sub: `<div class="bar ${v >= target ? "hit" : ""}"><i style="width:${Math.min(100, v / target * 100)}%"></i></div>`
         });
       }).join(""), seg);
+  }
+  if (board === "training") {
+    const rk1 = rankMap(L, x => x.trainWeek, false), rk2 = rankMap(L, x => x.trainTotal, false);
+    const last = x => x.t.length ? x.t.reduce((a, b) => (b.date > a.date || (b.date === a.date && (b.ts || 0) > (a.ts || 0))) ? b : a) : null;
+    html += card("Training this week", `<button class="link" data-act="log-training">Log training</button>`,
+      sortRank([...L], rk1).map(x => { const l = last(x); return row({ p: x.p, rank: rk1[x.p.id], main: `${x.trainWeek}`, small: x.trainWeek === 1 ? "session" : "sessions", sub: l ? `${esc(l.text)} · ${esc(relDay(l.date))}` : "Nothing logged yet" }); }).join(""));
+    html += card("This campaign", `<span class="meta">All sessions since ${esc(fmtDate(C.start))}</span>`,
+      sortRank([...L], rk2).map(x => row({ p: x.p, rank: rk2[x.p.id], main: `${x.trainTotal}`, small: `${x.trainDays} day${x.trainDays === 1 ? "" : "s"}`, sub: x.trainTotal ? `${(x.trainTotal / Math.max(1, Math.ceil(x.daysActive / 7))).toFixed(1)} a week on average` : "Nothing logged yet" })).join(""));
   }
   if (board === "streaks") {
     const rk1 = rankMap(L, x => x.goalStreak, false), rk2 = rankMap(L, x => x.weighStreak, false);
@@ -1278,6 +1310,10 @@ function historyCard(pid, editable) {
   const ws = state.weighins.filter(e => e.pid === pid).sort((a, b) => a.date < b.date ? 1 : -1);
   const ss = state.steps.filter(e => e.pid === pid).sort((a, b) => a.date < b.date ? 1 : -1).slice(0, 21);
   const seeW = canSeeWeight(p);
+  const ts = state.sessions.filter(e => e.pid === pid).sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : (b.ts || 0) - (a.ts || 0));
+  const tRows = ts.slice(0, 20).map(e => `<div class="hrow">${dateCell(e.date)}
+      <div class="r"><span style="text-align:right;max-width:180px">${esc(e.text)}</span>
+      ${editable ? `<button class="icon-btn" data-act="del-session" data-id="${esc(e.id)}" aria-label="Delete">✕</button>` : ""}</div></div>`).join("");
   const wRows = ws.slice(0, 30).map((e, i) => {
     const prev = ws[i + 1];
     const d = prev ? e.kg - prev.kg : null;
@@ -1289,6 +1325,7 @@ function historyCard(pid, editable) {
       <div class="r"><span class="num ${e.steps >= state.group.stepGoal ? "good" : ""}">${fmtInt(e.steps)}</span>
       ${editable ? `<button class="icon-btn" data-act="edit-steps" data-date="${e.date}" aria-label="Edit">✎</button><button class="icon-btn" data-act="del-steps" data-id="${esc(e.id)}" aria-label="Delete">✕</button>` : ""}</div></div>`).join("");
   return `<section class="card"><div class="card-h"><h2>Weigh-ins</h2><span class="meta">${ws.length} total</span></div><div class="hist">${wRows || `<p class="empty">None yet.</p>`}</div></section>
+    <section class="card"><div class="card-h"><h2>Training</h2><span class="meta">${ts.length} logged</span></div><div class="hist">${tRows || `<p class="empty">None yet.</p>`}</div></section>
     <section class="card"><div class="card-h"><h2>Steps</h2><span class="meta">Last 3 weeks</span></div><div class="hist">${sRows || `<p class="empty">None yet.</p>`}</div></section>`;
 }
 
@@ -1559,7 +1596,7 @@ function pickMe(id) {
 function openLogChooser() {
   if (!me()) { openWho(); return; }
   openSheet(`<h2>Log</h2><p class="lead">What are you recording?</p>
-    <div class="choice"><button data-act="log-weight">Weigh-in<span>Today's weight</span></button><button data-act="log-steps">Steps<span>From your phone or watch</span></button></div>`);
+    <div class="choice"><button data-act="log-weight">Weigh-in<span>Today's weight</span></button><button data-act="log-steps">Steps<span>From your phone or watch</span></button><button data-act="log-training" style="grid-column:1/-1">Training<span>Gym, run, padel, anything</span></button></div>`);
 }
 
 function openLogWeight(date = today()) {
@@ -1583,6 +1620,31 @@ function openLogWeight(date = today()) {
       const delta = prev ? kg - prev.kg : null;
       const msg = delta == null ? "Weigh-in logged." : delta < -0.004 ? `${fmtDelta(delta)}. Well fought.` : delta > 0.004 ? `${fmtDelta(delta)}. Get back up.` : "Held steady.";
       if (await safe(store.saveWeighin({ id: `${m.id}_${d}`, pid: m.id, date: d, kg, ts: Date.now() }), msg)) closeSheet();
+    });
+  });
+}
+
+function openLogTraining() {
+  const m = me(); if (!m) { openWho(); return; }
+  openSheet(`<h2>Log training</h2><p class="lead">What did you do? Keep it short.</p>
+    <form id="lt"><div class="field"><label for="lt-date">Date</label><input id="lt-date" type="date" name="date" value="${today()}" max="${today()}"></div>
+    <div class="field"><div class="kinds">${TRAINING_KINDS.map(k => `<button type="button" class="chip" data-kind="${k}">${k}</button>`).join("")}</div>
+      <input id="lt-text" type="text" name="text" maxlength="80" placeholder="e.g. Gym — legs, or 5k run" autocomplete="off" style="margin-top:10px">
+      <div class="hint">Tap one to start, then add detail if you like.</div></div>
+    <p class="err" id="lt-err"></p><div class="btn-row"><button class="btn primary" type="submit">Log training</button></div></form>`, body => {
+    const f = $("#lt", body);
+    body.querySelectorAll("[data-kind]").forEach(b => b.addEventListener("click", () => {
+      const k = b.dataset.kind, cur = f.text.value.trim();
+      f.text.value = !cur || TRAINING_KINDS.includes(cur) ? k : cur.startsWith(k) ? cur : `${k} — ${cur}`;
+      body.querySelectorAll("[data-kind]").forEach(c => c.classList.toggle("on", c === b));
+      f.text.focus(); f.text.setSelectionRange(f.text.value.length, f.text.value.length);
+    }));
+    f.addEventListener("submit", async e => {
+      e.preventDefault();
+      const d = f.date.value, text = f.text.value.trim().replace(/\s+/g, " ");
+      if (!d || d > today()) { $("#lt-err").textContent = "Pick a date that isn't in the future."; return; }
+      if (!text) { $("#lt-err").textContent = "Say what you did, even just \"Gym\"."; return; }
+      if (await safe(store.saveSession({ id: `${m.id}_${d}_${uid().slice(0, 6)}`, pid: m.id, date: d, text, ts: Date.now() }), "Training logged. Well fought.")) closeSheet();
     });
   });
 }
@@ -1627,6 +1689,7 @@ function openPlayer(id) {
       <div class="stat"><b class="num">${fmtInt(x.stepsAvg)}</b><span>Avg steps</span></div>
     </div>
     <div class="chart" id="chartPlayer" data-pid="${esc(id)}" style="margin-top:14px"></div>
+    <p class="faint" style="font-size:.82rem;margin:12px 0 0">${x.trainWeek} training session${x.trainWeek === 1 ? "" : "s"} this week · ${x.trainTotal} this campaign</p>
     <div class="btn-row">${meId ? `<button class="btn" data-act="compare-go" data-id="${esc(id)}">Compare with me</button>` : ""}<button class="btn" data-act="close">Close</button></div>
     <div style="margin-top:14px">${historyCard(id, false)}</div>`, () => mountCharts(C));
 }
@@ -1680,6 +1743,7 @@ document.addEventListener("click", async e => {
     case "log": openLogChooser(); break;
     case "log-weight": openLogWeight(); break;
     case "log-steps": openLogSteps(); break;
+    case "log-training": openLogTraining(); break;
     case "player": openPlayer(id); break;
     case "board": board = t.dataset.board; render(); break;
     case "steps-range": stepsRange = t.dataset.range; render(); break;
@@ -1700,6 +1764,7 @@ document.addEventListener("click", async e => {
     case "edit-steps": openLogSteps(t.dataset.date); break;
     case "del-weigh": if (confirm("Delete this weigh-in?")) safe(store.deleteWeighin(id), "Weigh-in deleted"); break;
     case "del-steps": if (confirm("Delete this step entry?")) safe(store.deleteSteps(id), "Steps deleted"); break;
+    case "del-session": if (confirm("Delete this training entry?")) safe(store.deleteSession(id), "Training deleted"); break;
     case "reset-demo": if (!LIVE && confirm("Reset the demo to the sample players?")) { prefs.del(ME_KEY); meId = null; spectator = false; store.reset(); } break;
   }
 });

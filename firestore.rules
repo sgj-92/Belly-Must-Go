@@ -49,6 +49,17 @@ service cloud.firestore {
         allow delete: if signedIn();
       }
 
+      match /sessions/{entryId} {
+        allow read: if signedIn();
+        allow create, update: if signedIn()
+          && request.resource.data.keys().hasOnly(['pid', 'date', 'text', 'ts'])
+          && isDate(request.resource.data.date)
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 80
+          && exists(/databases/$(database)/documents/groups/$(groupId)/players/$(request.resource.data.pid));
+        allow delete: if signedIn();
+      }
+
       match /steps/{entryId} {
         allow read: if signedIn();
         allow create, update: if signedIn()
