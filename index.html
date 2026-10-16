@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Belly Must Go</title>
-<meta name="description" content="Weight-loss and step-count leaderboard for the Belly Must Go padel crew.">
-<meta name="theme-color" content="#0b0f14">
+<meta name="description" content="The arena for the Belly Must Go padel legion: weigh-ins, marches and glory.">
+<meta name="theme-color" content="#0c0b0a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -15,42 +15,59 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  /* ==================================================================
+     THEME — "The Arena"
+     Physical: 100's plaster torsos on marble plinths, the bronze and
+     crimson of 300 / Troy, Gladiator's sand and gold, Rocky's grit.
+     Stone surfaces, bronze metal, crimson cloth, plaster white.
+     ================================================================== */
   :root{
     color-scheme: dark;
-    --bg: #0b0f14;
-    --surface: #131a22;
-    --surface-2: #1a232e;
-    --surface-3: #222d3a;
-    --border: rgba(222, 232, 245, 0.08);
-    --border-strong: rgba(222, 232, 245, 0.16);
-    --text: #eef2f6;
-    --text-dim: #a3afbc;
-    --text-faint: #6f7c8a;
+    --bg: #0c0b0a;
+    --surface: #161412;
+    --surface-2: #1f1c18;
+    --surface-3: #2a2620;
+    --border: rgba(236, 222, 196, 0.08);
+    --border-strong: rgba(236, 222, 196, 0.16);
+    --text: #f2ece1;
+    --text-dim: #b6ab99;
+    --text-faint: #7f7666;
 
-    --accent: #c8f031;          /* padel-ball lime */
-    --accent-ink: #11160a;
-    --accent-dim: rgba(200, 240, 49, 0.12);
+    --accent: #d6a548;          /* bronze — the armour */
+    --accent-2: #f0cd7a;
+    --accent-ink: #1a1206;
+    --accent-dim: rgba(214, 165, 72, 0.13);
+    --crimson: #b8281f;         /* the cloak */
+    --crimson-2: #e0463a;
+    --plaster: #efe8db;
 
-    --good: #3ccf8e;            /* weight down / goal hit */
-    --good-dim: rgba(60, 207, 142, 0.12);
-    --bad: #ff6b5e;             /* weight up */
-    --bad-dim: rgba(255, 107, 94, 0.12);
-    --gold: #f5c451;
-    --silver: #c9d1da;
-    --bronze: #d79a62;
+    --good: #9dc76f;            /* laurel — weight down / goal hit */
+    --good-dim: rgba(157, 199, 111, 0.13);
+    --bad: #f0584a;             /* blood — weight up */
+    --bad-dim: rgba(240, 88, 74, 0.13);
+    --gold: #f0c75a;
+    --silver: #cfd4da;
+    --bronze: #cf8d55;
 
     /* chart series (validated on --surface, dark) */
-    --series-1: #3987e5;
-    --series-2: #d95926;
-    --series-muted: rgba(163, 175, 188, 0.28);
+    --series-1: #b8862a;        /* you: bronze */
+    --series-2: #4a8fe0;        /* rival: Aegean */
+    --series-muted: rgba(182, 171, 153, 0.26);
 
-    --radius: 18px;
-    --radius-sm: 12px;
-    --tabbar-h: 64px;
+    --f-head: 'Cinzel', 'Trajan Pro', Georgia, serif;
+    --f-num: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
+    --f-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+    --radius: 16px;
+    --radius-sm: 10px;
+    --tabbar-h: 66px;
     --safe-b: env(safe-area-inset-bottom, 0px);
     --safe-t: env(safe-area-inset-top, 0px);
+
+    --meander: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M0 15H14V1H2V12H11V4H5V9H8M14 15H16' fill='none' stroke='%23d6a548' stroke-width='1.6'/%3E%3C/svg%3E");
+    --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .93 0 0 0 0 .82 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
   *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -59,122 +76,173 @@
     margin: 0;
     min-height: 100vh;
     background:
-      radial-gradient(900px 500px at 10% -10%, rgba(200,240,49,0.07), transparent 60%),
-      radial-gradient(700px 420px at 110% 0%, rgba(57,135,229,0.08), transparent 55%),
+      radial-gradient(ellipse 70% 420px at 50% -60px, rgba(255, 228, 180, 0.13), transparent 70%),
+      radial-gradient(600px 500px at -10% 30%, rgba(184, 40, 31, 0.08), transparent 60%),
+      radial-gradient(600px 500px at 110% 70%, rgba(214, 165, 72, 0.06), transparent 60%),
       var(--bg);
     background-attachment: fixed;
     color: var(--text);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: var(--f-body);
     font-size: 15px;
     line-height: 1.45;
     padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + 24px);
     overflow-x: hidden;
   }
-  h1,h2,h3{ font-family: 'Outfit', system-ui, sans-serif; margin: 0; letter-spacing: -0.01em; }
+  body::before{
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background: var(--grain); opacity: 0.05; mix-blend-mode: overlay;
+  }
+  .wrap{ position: relative; z-index: 1; }
+  h1,h2,h3{ font-family: var(--f-head); margin: 0; letter-spacing: 0.04em; font-weight: 700; }
   button{ font: inherit; color: inherit; }
   .num{ font-variant-numeric: tabular-nums; }
+  :focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+  :focus:not(:focus-visible){ outline: none; }
   .wrap{ max-width: 640px; margin: 0 auto; padding: 0 16px; }
 
   /* ---------- top bar ---------- */
   .topbar{
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: calc(14px + var(--safe-t)) 0 10px;
+    padding: calc(14px + var(--safe-t)) 0 12px;
   }
   .brand{ display: flex; align-items: center; gap: 10px; min-width: 0; }
-  .brand .ball{
-    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-    background: radial-gradient(circle at 32% 30%, #f1ffb0, var(--accent) 55%, #8aa61c 100%);
-    box-shadow: inset -3px -3px 6px rgba(0,0,0,0.3), 0 2px 10px rgba(200,240,49,0.35);
-    position: relative; overflow: hidden;
-  }
-  .brand .ball::after{
-    content: ""; position: absolute; inset: -2px 9px; border: 2px solid rgba(255,255,255,0.75);
-    border-top: 0; border-bottom: 0; border-radius: 50%;
-  }
-  .brand h1{ font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; white-space: nowrap; }
+  .brand .crest{ width: 34px; height: 34px; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(214,165,72,0.35)); }
+  .brand .crest svg{ width: 100%; height: 100%; display: block; }
+  .brand h1{ font-size: 1.15rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; line-height: 1; }
   .brand h1 span{ color: var(--accent); }
+  .brand small{ display: block; font-family: var(--f-body); font-size: 0.6rem; letter-spacing: 0.32em; color: var(--text-faint); font-weight: 600; margin-top: 4px; text-transform: uppercase; }
   .pill{
     display: inline-flex; align-items: center; gap: 6px;
     padding: 6px 12px; border-radius: 999px;
     background: var(--surface); border: 1px solid var(--border-strong);
-    font-size: 0.78rem; font-weight: 600; color: var(--text-dim); white-space: nowrap;
+    font-size: 0.74rem; font-weight: 700; color: var(--text-dim); white-space: nowrap;
+    letter-spacing: 0.06em; text-transform: uppercase;
   }
   .pill .dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
-  .pill.demo .dot{ background: var(--gold); }
+  .pill.demo .dot{ background: var(--accent); }
 
   .banner{
-    margin: 4px 0 12px; padding: 10px 14px; border-radius: var(--radius-sm);
-    background: rgba(245,196,81,0.08); border: 1px solid rgba(245,196,81,0.25);
-    color: #f3dca0; font-size: 0.82rem; display: flex; gap: 10px; align-items: center; justify-content: space-between;
+    margin: 0 0 12px; padding: 10px 14px; border-radius: var(--radius-sm);
+    background: rgba(214,165,72,0.07); border: 1px solid rgba(214,165,72,0.22);
+    color: #ecd6a4; font-size: 0.82rem; display: flex; gap: 10px; align-items: center; justify-content: space-between;
   }
-  .banner button{ background: none; border: 1px solid rgba(245,196,81,0.4); color: #f3dca0; border-radius: 999px; padding: 4px 10px; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .banner button{ background: none; border: 1px solid rgba(214,165,72,0.45); color: #ecd6a4; border-radius: 999px; padding: 4px 10px; font-size: 0.72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
 
   /* ---------- cards ---------- */
   .card{
-    background: var(--surface); border: 1px solid var(--border);
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,240,215,0.025), transparent 40%), var(--surface);
+    border: 1px solid var(--border);
     border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
   }
   .card-h{ display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-  .card-h h2{ font-size: 1.05rem; font-weight: 700; }
-  .card-h .meta{ font-size: 0.78rem; color: var(--text-faint); }
-  .link{ background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; font-size: 0.82rem; cursor: pointer; }
-  .eyebrow{ font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); }
+  .card-h h2{ font-size: 0.98rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+  .card-h .meta{ font-size: 0.74rem; color: var(--text-faint); text-align: right; }
+  .link{ background: none; border: 0; padding: 0; color: var(--accent); font-weight: 700; font-size: 0.76rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+  .eyebrow{ font-size: 0.68rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-faint); }
   .empty{ color: var(--text-faint); font-size: 0.88rem; text-align: center; padding: 18px 8px; margin: 0; }
+  .meander{ height: 10px; background: var(--meander) repeat-x center / 10px 10px; opacity: 0.55; }
 
   /* season strip */
   .season{ display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 2px 0 14px; }
   .season::-webkit-scrollbar{ display: none; }
   .season .pill{ background: transparent; }
 
+  /* quote */
+  .quote{ text-align: center; margin: 4px 0 16px; padding: 0 8px; }
+  .quote q{ display: block; font-family: var(--f-head); font-size: 1.02rem; font-weight: 700; line-height: 1.35; color: var(--plaster); quotes: "“" "”"; letter-spacing: 0.02em; }
+  .quote cite{ display: block; margin-top: 6px; font-style: normal; font-size: 0.66rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--accent); }
+
   /* hero */
   .hero{
-    position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #18230d 0%, #121a12 45%, var(--surface) 100%);
-    border-color: rgba(200,240,49,0.18);
+    overflow: hidden; padding-top: 0;
+    background:
+      radial-gradient(ellipse 80% 120% at 85% 0%, rgba(184,40,31,0.28), transparent 60%),
+      linear-gradient(160deg, #241b12 0%, #17130f 55%, var(--surface) 100%);
+    border-color: rgba(214,165,72,0.22);
   }
+  .hero .meander{ margin: 0 -16px 14px; }
   .hero-row{ display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-  .hero .big{ font-family: 'Outfit'; font-weight: 900; font-size: 2.6rem; line-height: 1; color: var(--accent); letter-spacing: -0.02em; }
-  .hero .cap{ color: var(--text-dim); font-size: 0.85rem; margin-top: 6px; }
+  .hero .big{ font-family: var(--f-num); font-weight: 400; font-size: 3.1rem; line-height: 0.95; color: var(--accent-2); letter-spacing: 0.01em; text-shadow: 0 2px 24px rgba(214,165,72,0.25); }
+  .hero .cap{ color: var(--text-dim); font-size: 0.84rem; margin-top: 6px; }
   .hero-stats{ display: flex; gap: 18px; }
   .hero-stats div{ text-align: right; }
-  .hero-stats b{ display: block; font-family: 'Outfit'; font-size: 1.3rem; font-weight: 800; }
-  .hero-stats span{ font-size: 0.72rem; color: var(--text-faint); }
+  .hero-stats b{ display: block; font-family: var(--f-num); font-size: 1.5rem; font-weight: 400; line-height: 1.1; }
+  .hero-stats span{ font-size: 0.66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-faint); }
+
+  /* ---------- the pantheon: torsos on plinths ---------- */
+  .pantheon-card{ padding-bottom: 0; overflow: hidden;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% 0%, rgba(255,232,190,0.12), transparent 70%),
+      linear-gradient(180deg, #1a1714, #100e0c);
+  }
+  .pantheon{ display: flex; align-items: flex-end; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 6px 16px 0; scroll-snap-type: x proximity; }
+  .pantheon::-webkit-scrollbar{ display: none; }
+  .statue{ flex: 1 0 82px; max-width: 120px; display: flex; flex-direction: column; align-items: center; background: none; border: 0; padding: 0; cursor: pointer; scroll-snap-align: center; }
+  .statue .torso{ width: 74%; display: block; filter: drop-shadow(0 6px 10px rgba(0,0,0,0.55)); transition: transform .25s ease; }
+  .statue:hover .torso{ transform: translateY(-3px); }
+  .statue .pct{ font-family: var(--f-num); font-size: 1.05rem; margin: 6px 0 4px; line-height: 1; }
+  .plinth{
+    width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding: 8px 4px 10px; border-radius: 3px 3px 0 0;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,0.25), transparent 18%, transparent 82%, rgba(0,0,0,0.3)),
+      linear-gradient(180deg, #d9d2c4, #a79f90);
+    color: #2b241b; box-shadow: inset 0 3px 0 rgba(255,255,255,0.5);
+  }
+  .plinth .rkn{ font-family: var(--f-head); font-weight: 900; font-size: 1.05rem; line-height: 1; }
+  .plinth .nm{ font-family: var(--f-head); font-weight: 700; font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .statue.lead .plinth{ background: linear-gradient(90deg, rgba(0,0,0,0.2), transparent 18%, transparent 82%, rgba(0,0,0,0.25)), linear-gradient(180deg, #f2d27e, #b7862f); }
+  .statue.me .plinth{ outline: 2px solid var(--accent); outline-offset: -2px; }
+  .tier{ display: inline-flex; align-items: center; gap: 5px; font-size: 0.64rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px; background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(214,165,72,0.25); }
+  .tier.t0{ color: var(--text-dim); background: var(--surface-3); border-color: var(--border-strong); }
+  .tier.t5{ color: var(--accent-ink); background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
 
   /* my card */
   .me-top{ display: flex; align-items: center; gap: 12px; }
+  .me-statue{ width: 64px; flex-shrink: 0; }
+  .me-statue .torso{ width: 100%; display: block; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6)); }
   .av{
     width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
-    display: grid; place-items: center; font-size: 1.3rem;
-    background: var(--surface-3); border: 1px solid var(--border-strong);
+    display: grid; place-items: center; font-size: 1.25rem;
+    background: radial-gradient(circle at 35% 30%, #3a332a, #1d1a16); border: 1px solid rgba(214,165,72,0.35);
   }
-  .av.lg{ width: 54px; height: 54px; font-size: 1.8rem; }
-  .av.sm{ width: 32px; height: 32px; font-size: 1.05rem; }
-  .me-name{ font-family: 'Outfit'; font-weight: 800; font-size: 1.2rem; }
-  .me-sub{ color: var(--text-dim); font-size: 0.82rem; }
+  .av.lg{ width: 54px; height: 54px; font-size: 1.7rem; }
+  .av.sm{ width: 32px; height: 32px; font-size: 1rem; }
+  .me-name{ font-family: var(--f-head); font-weight: 900; font-size: 1.2rem; letter-spacing: 0.04em; }
+  .me-sub{ color: var(--text-dim); font-size: 0.8rem; }
+  .big-pct{ font-family: var(--f-num); font-size: 2rem; line-height: 1; }
   .stat-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
-  .stat{ background: var(--surface-2); border-radius: var(--radius-sm); padding: 10px 12px; min-width: 0; }
-  .stat b{ display: block; font-family: 'Outfit'; font-size: 1.15rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .stat span{ font-size: 0.72rem; color: var(--text-faint); }
+  .stat{ background: var(--surface-2); border-radius: var(--radius-sm); padding: 10px 12px; min-width: 0; border: 1px solid var(--border); }
+  .stat b{ display: block; font-family: var(--f-num); font-size: 1.25rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.01em; }
+  .stat span{ font-size: 0.66rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-faint); }
   .nudge{
     margin-top: 12px; padding: 10px 12px; border-radius: var(--radius-sm);
-    background: var(--accent-dim); color: #e4f7a6; font-size: 0.85rem;
+    background: linear-gradient(90deg, rgba(184,40,31,0.18), rgba(184,40,31,0.04)); border-left: 3px solid var(--crimson);
+    color: #f1d9cf; font-size: 0.85rem;
   }
+  .nudge b{ color: #fff; }
+  .forge{ margin-top: 12px; font-size: 0.78rem; color: var(--text-dim); }
+  .forge .bar{ margin-top: 6px; }
   .btn-row{ display: flex; gap: 8px; margin-top: 14px; }
   .btn{
     flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    min-height: 46px; padding: 10px 16px; border-radius: 14px; cursor: pointer;
+    min-height: 48px; padding: 10px 16px; border-radius: 10px; cursor: pointer;
     background: var(--surface-3); border: 1px solid var(--border-strong);
-    font-weight: 700; font-size: 0.92rem;
+    font-weight: 800; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase;
   }
-  .btn.primary{ background: var(--accent); color: var(--accent-ink); border-color: transparent; }
-  .btn.danger{ background: var(--bad-dim); color: var(--bad); border-color: rgba(255,107,94,0.3); }
+  .btn.primary{
+    background: linear-gradient(180deg, var(--accent-2), var(--accent) 55%, #a87a2a); color: var(--accent-ink); border-color: transparent;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 6px 18px -8px rgba(214,165,72,0.7);
+  }
+  .btn.danger{ background: var(--bad-dim); color: var(--bad); border-color: rgba(240,88,74,0.3); }
   .btn:active{ transform: scale(0.98); }
   .btn[disabled]{ opacity: 0.5; cursor: default; }
 
   /* progress */
-  .bar{ height: 8px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
-  .bar i{ display: block; height: 100%; border-radius: 999px; background: var(--series-1); transition: width .4s ease; }
-  .bar.hit i{ background: var(--good); }
+  .bar{ height: 8px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
+  .bar i{ display: block; height: 100%; border-radius: 2px; background: linear-gradient(90deg, #8a6420, var(--accent)); transition: width .4s ease; }
+  .bar.hit i{ background: linear-gradient(90deg, #6f9a45, var(--good)); }
 
   /* tone */
   .good{ color: var(--good); }
@@ -183,61 +251,49 @@
 
   /* awards */
   .awards{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .award{ border-radius: var(--radius-sm); padding: 12px; background: var(--surface-2); min-width: 0; border: 1px solid transparent; cursor: pointer; text-align: left; }
-  .award.win{ background: linear-gradient(160deg, rgba(245,196,81,0.16), rgba(245,196,81,0.03)); border-color: rgba(245,196,81,0.25); }
-  .award.shame{ background: linear-gradient(160deg, rgba(255,107,94,0.14), rgba(255,107,94,0.03)); border-color: rgba(255,107,94,0.22); }
-  .award .t{ font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); }
-  .award .n{ font-family: 'Outfit'; font-weight: 800; font-size: 1.05rem; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .award{ border-radius: var(--radius-sm); padding: 12px; background: var(--surface-2); min-width: 0; border: 1px solid transparent; cursor: pointer; text-align: left; position: relative; overflow: hidden; }
+  .award.win{ background: linear-gradient(160deg, rgba(240,199,90,0.18), rgba(240,199,90,0.03)); border-color: rgba(240,199,90,0.3); }
+  .award.shame{ background: linear-gradient(160deg, rgba(184,40,31,0.25), rgba(184,40,31,0.04)); border-color: rgba(224,70,58,0.3); }
+  .award .t{ font-size: 0.64rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-dim); }
+  .award .n{ font-family: var(--f-head); font-weight: 900; font-size: 1rem; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .award .v{ font-size: 0.82rem; margin-top: 2px; }
 
   /* leaderboard rows */
   .rows{ display: flex; flex-direction: column; gap: 6px; }
   .row{
     display: grid; grid-template-columns: 28px 36px 1fr auto; align-items: center; gap: 10px;
-    width: 100%; padding: 10px 10px 10px 8px; border-radius: 14px; text-align: left;
-    background: var(--surface-2); border: 1px solid transparent; cursor: pointer;
+    width: 100%; padding: 10px 12px 10px 8px; border-radius: 10px; text-align: left;
+    background: var(--surface-2); border: 1px solid var(--border); cursor: pointer;
   }
-  .row.me{ border-color: rgba(200,240,49,0.35); background: linear-gradient(90deg, rgba(200,240,49,0.07), var(--surface-2) 60%); }
-  .row .rk{ font-family: 'Outfit'; font-weight: 800; font-size: 1rem; text-align: center; color: var(--text-dim); }
-  .row .rk.r1{ color: var(--gold); } .row .rk.r2{ color: var(--silver); } .row .rk.r3{ color: var(--bronze); }
-  .row .av{ width: 36px; height: 36px; font-size: 1.15rem; }
+  .row.me{ border-color: rgba(214,165,72,0.45); background: linear-gradient(90deg, rgba(214,165,72,0.10), var(--surface-2) 60%); }
+  .row .rk{ font-family: var(--f-head); font-weight: 900; font-size: 1.05rem; text-align: center; color: var(--text-faint); }
+  .row .rk.r1{ color: var(--gold); text-shadow: 0 0 12px rgba(240,199,90,0.4); } .row .rk.r2{ color: var(--silver); } .row .rk.r3{ color: var(--bronze); }
+  .row .av{ width: 36px; height: 36px; font-size: 1.1rem; }
   .row .who{ min-width: 0; }
   .row .nm{ font-weight: 700; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .row .sub{ display: block; font-size: 0.76rem; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .sub{ display: block; font-size: 0.74rem; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row .sub .bar{ margin-top: 6px; height: 6px; }
   .row .val{ text-align: right; white-space: nowrap; }
-  .row .val b{ display: block; font-family: 'Outfit'; font-weight: 800; font-size: 1.05rem; }
-  .row .val small{ font-size: 0.74rem; color: var(--text-faint); }
-  .mv{ font-size: 0.68rem; font-weight: 700; padding: 1px 5px; border-radius: 6px; }
+  .row .val b{ display: block; font-family: var(--f-num); font-weight: 400; font-size: 1.25rem; line-height: 1.1; letter-spacing: 0.01em; }
+  .row .val small{ font-size: 0.72rem; color: var(--text-faint); }
+  .mv{ font-size: 0.64rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; }
   .mv.up{ color: var(--good); background: var(--good-dim); }
   .mv.down{ color: var(--bad); background: var(--bad-dim); }
   .mv.new{ color: var(--text-dim); background: var(--surface-3); }
-  .tag{ font-size: 0.66rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; background: var(--accent-dim); color: var(--accent); }
-
-  /* podium */
-  .podium{ display: grid; grid-template-columns: 1fr 1.15fr 1fr; align-items: end; gap: 8px; margin: 4px 0 12px; }
-  .pod{ text-align: center; cursor: pointer; background: none; border: 0; padding: 0; min-width: 0; }
-  .pod .av{ margin: 0 auto 6px; width: 46px; height: 46px; font-size: 1.5rem; }
-  .pod.p1 .av{ width: 58px; height: 58px; font-size: 1.9rem; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245,196,81,0.2); }
-  .pod .nm{ font-weight: 700; font-size: 0.86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .pod .pv{ font-family: 'Outfit'; font-weight: 800; font-size: 0.95rem; }
-  .pod .step{ margin-top: 8px; border-radius: 12px 12px 4px 4px; display: grid; place-items: center; font-family: 'Outfit'; font-weight: 900; font-size: 1.3rem; }
-  .pod.p1 .step{ height: 74px; background: linear-gradient(180deg, rgba(245,196,81,0.35), rgba(245,196,81,0.08)); color: var(--gold); }
-  .pod.p2 .step{ height: 54px; background: linear-gradient(180deg, rgba(201,209,218,0.25), rgba(201,209,218,0.05)); color: var(--silver); }
-  .pod.p3 .step{ height: 40px; background: linear-gradient(180deg, rgba(215,154,98,0.28), rgba(215,154,98,0.06)); color: var(--bronze); }
+  .tag{ font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: var(--accent-dim); color: var(--accent); white-space: nowrap; }
 
   /* chips */
-  .chips{ display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 12px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+  .chips{ display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 16px 12px; margin: 0 -16px; }
   .chips::-webkit-scrollbar{ display: none; }
   .chip{
-    flex-shrink: 0; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+    flex-shrink: 0; padding: 8px 14px; border-radius: 8px; cursor: pointer;
     background: var(--surface); border: 1px solid var(--border-strong);
-    font-weight: 600; font-size: 0.84rem; color: var(--text-dim);
+    font-weight: 800; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim);
   }
-  .chip.on{ background: var(--accent); color: var(--accent-ink); border-color: transparent; }
-  .seg{ display: inline-flex; background: var(--surface-2); border-radius: 12px; padding: 3px; gap: 2px; }
-  .seg button{ border: 0; background: none; padding: 6px 12px; border-radius: 9px; font-size: 0.8rem; font-weight: 600; color: var(--text-dim); cursor: pointer; }
-  .seg button.on{ background: var(--surface-3); color: var(--text); }
+  .chip.on{ background: linear-gradient(180deg, var(--accent-2), var(--accent)); color: var(--accent-ink); border-color: transparent; }
+  .seg{ display: inline-flex; background: var(--surface-2); border-radius: 10px; padding: 3px; gap: 2px; border: 1px solid var(--border); }
+  .seg button{ border: 0; background: none; padding: 6px 12px; border-radius: 7px; font-size: 0.74rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-dim); cursor: pointer; }
+  .seg button.on{ background: var(--surface-3); color: var(--accent-2); }
 
   /* feed */
   .feed{ display: flex; flex-direction: column; }
@@ -246,7 +302,7 @@
   .ev .tx{ font-size: 0.88rem; color: var(--text-dim); }
   .ev .tx b{ color: var(--text); font-weight: 700; }
   .ev .tx b.good{ color: var(--good); } .ev .tx b.bad{ color: var(--bad); }
-  .ev .when{ font-size: 0.72rem; color: var(--text-faint); margin-top: 2px; }
+  .ev .when{ font-size: 0.68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--text-faint); margin-top: 2px; }
   .ev .tags{ display: inline-flex; gap: 4px; flex-wrap: wrap; margin-left: 4px; }
 
   /* step race */
@@ -257,23 +313,23 @@
   .race-row .top span:last-child{ color: var(--text-dim); }
   .race-row .ok{ font-size: 1rem; width: 20px; text-align: center; }
 
-  /* dodgers */
+  /* deserters */
   .dodgers{ display: flex; flex-wrap: wrap; gap: 8px; }
-  .dodger{ display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; background: var(--surface-2); font-size: 0.84rem; cursor: pointer; border: 0; }
+  .dodger{ display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; background: var(--surface-2); border: 1px dashed rgba(240,88,74,0.35); font-size: 0.84rem; cursor: pointer; }
   .dodger .av{ width: 26px; height: 26px; font-size: 0.9rem; }
-  .dodger small{ color: var(--bad); font-weight: 600; }
+  .dodger small{ color: var(--bad); font-weight: 700; }
 
   /* chart */
   .chart{ position: relative; width: 100%; touch-action: pan-y; }
   .chart svg{ display: block; width: 100%; overflow: visible; }
   .chart .axis text{ fill: var(--text-faint); font-size: 10.5px; font-family: Inter, sans-serif; }
-  .chart .grid line{ stroke: rgba(222,232,245,0.07); }
-  .chart .zero{ stroke: rgba(222,232,245,0.25); stroke-dasharray: 3 3; }
+  .chart .grid line{ stroke: rgba(236,222,196,0.07); }
+  .chart .zero{ stroke: rgba(236,222,196,0.28); stroke-dasharray: 3 3; }
   .chart .lbl{ font-size: 11px; font-weight: 700; font-family: Inter, sans-serif; fill: var(--text); }
   .chart .lbl-sub{ font-size: 10.5px; fill: var(--text-dim); font-family: Inter, sans-serif; }
   .tip{
     position: absolute; top: 0; pointer-events: none; z-index: 5;
-    background: rgba(10,14,19,0.96); border: 1px solid var(--border-strong); border-radius: 10px;
+    background: rgba(12,11,10,0.96); border: 1px solid var(--border-strong); border-radius: 8px;
     padding: 8px 10px; font-size: 0.76rem; min-width: 130px; max-width: 220px;
     box-shadow: 0 10px 30px -10px rgba(0,0,0,0.7); display: none;
   }
@@ -289,11 +345,11 @@
   }
   .legend button i{ width: 14px; height: 2px; border-radius: 2px; background: var(--series-muted); }
   .legend button.me{ color: var(--text); } .legend button.me i{ background: var(--series-1); }
-  .legend button.cmp{ color: var(--text); border-color: rgba(217,89,38,0.5); } .legend button.cmp i{ background: var(--series-2); }
+  .legend button.cmp{ color: var(--text); border-color: rgba(74,143,224,0.5); } .legend button.cmp i{ background: var(--series-2); }
   table.data{ width: 100%; border-collapse: collapse; font-size: 0.84rem; margin-top: 10px; }
   table.data th, table.data td{ padding: 7px 6px; text-align: right; border-bottom: 1px solid var(--border); }
   table.data th:first-child, table.data td:first-child{ text-align: left; }
-  table.data th{ color: var(--text-faint); font-weight: 600; font-size: 0.74rem; }
+  table.data th{ color: var(--text-faint); font-weight: 700; font-size: 0.66rem; letter-spacing: .1em; text-transform: uppercase; }
 
   /* history list */
   .hist{ display: flex; flex-direction: column; }
@@ -301,7 +357,7 @@
   .hrow:first-child{ border-top: 0; }
   .hrow .l{ font-size: 0.88rem; } .hrow .l small{ display: block; color: var(--text-faint); font-size: 0.74rem; }
   .hrow .r{ display: flex; align-items: center; gap: 4px; }
-  .icon-btn{ background: none; border: 0; color: var(--text-faint); padding: 8px; border-radius: 10px; cursor: pointer; font-size: 0.9rem; }
+  .icon-btn{ background: none; border: 0; color: var(--text-faint); padding: 8px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
   .icon-btn:hover{ background: var(--surface-3); color: var(--text); }
 
   /* settings list */
@@ -315,18 +371,21 @@
   .tabbar{
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
     height: calc(var(--tabbar-h) + var(--safe-b)); padding-bottom: var(--safe-b);
-    background: rgba(11,15,20,0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid var(--border);
+    background: rgba(12,11,10,0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(214,165,72,0.18);
     display: flex; justify-content: center;
   }
+  .tabbar::before{ content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 2px; background: linear-gradient(90deg, transparent, var(--crimson) 30%, var(--crimson) 70%, transparent); opacity: .7; }
   .tabbar-in{ display: grid; grid-template-columns: repeat(5, 1fr); width: 100%; max-width: 640px; }
-  .tab{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: 0; color: var(--text-faint); font-size: 0.68rem; font-weight: 600; cursor: pointer; }
+  .tab{ display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: 0; color: var(--text-faint); font-size: 0.6rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
   .tab svg{ width: 22px; height: 22px; }
-  .tab.on{ color: var(--accent); }
+  .tab.on{ color: var(--accent-2); }
   .tab.log{ color: var(--accent-ink); }
   .tab.log span.plus{
-    width: 46px; height: 46px; border-radius: 16px; background: var(--accent); display: grid; place-items: center;
-    box-shadow: 0 6px 20px -6px rgba(200,240,49,0.6);
+    width: 50px; height: 50px; border-radius: 50%; display: grid; place-items: center; margin-top: -14px;
+    background: radial-gradient(circle at 35% 30%, var(--accent-2), var(--accent) 50%, #8a6420);
+    border: 2px solid #3a2a10;
+    box-shadow: 0 0 0 3px rgba(214,165,72,0.18), 0 8px 22px -6px rgba(214,165,72,0.7);
   }
   .tab.log span.plus svg{ width: 24px; height: 24px; }
 
@@ -334,70 +393,76 @@
   dialog.sheet{
     border: 0; padding: 0; margin: auto auto 0; width: 100%; max-width: 560px;
     max-height: 92vh; background: var(--surface); color: var(--text);
-    border-radius: 22px 22px 0 0; border-top: 1px solid var(--border-strong);
+    border-radius: 18px 18px 0 0; border-top: 2px solid var(--crimson);
   }
-  dialog.sheet::backdrop{ background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); }
+  dialog.sheet::backdrop{ background: rgba(0,0,0,0.65); backdrop-filter: blur(2px); }
   dialog.sheet[open]{ animation: up .22s ease-out; }
   @keyframes up{ from{ transform: translateY(40px); opacity: 0; } to{ transform: none; opacity: 1; } }
-  @media (min-width: 640px){ dialog.sheet{ margin: auto; border-radius: 22px; border: 1px solid var(--border-strong); } }
+  @media (min-width: 640px){ dialog.sheet{ margin: auto; border-radius: 18px; border: 1px solid var(--border-strong); border-top: 2px solid var(--crimson); } }
   .sheet-in{ padding: 10px 18px calc(22px + var(--safe-b)); overflow-y: auto; max-height: 92vh; }
   .grab{ width: 40px; height: 4px; border-radius: 4px; background: var(--border-strong); margin: 0 auto 14px; }
-  .sheet-in h2{ font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+  .sheet-in h2{ font-size: 1.3rem; font-weight: 900; margin-bottom: 4px; text-transform: uppercase; }
   .sheet-in .lead{ color: var(--text-dim); font-size: 0.88rem; margin: 0 0 16px; }
+  .sheet-statue{ width: 120px; margin: 0 auto 10px; }
+  .sheet-statue .torso{ width: 100%; display: block; filter: drop-shadow(0 8px 14px rgba(0,0,0,0.6)); }
 
   /* forms */
   .field{ margin-bottom: 14px; }
-  .field > label, .field > .lab{ display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; }
+  .field > label, .field > .lab{ display: block; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
   .field .hint{ font-size: 0.74rem; color: var(--text-faint); margin-top: 5px; }
   input[type=text], input[type=number], input[type=date], input[type=password], input[type=tel]{
-    width: 100%; min-height: 48px; padding: 10px 14px; border-radius: 12px;
+    width: 100%; min-height: 48px; padding: 10px 14px; border-radius: 10px;
     background: var(--surface-2); border: 1px solid var(--border-strong); color: var(--text);
     font: inherit; font-size: 16px; outline: none;
   }
   input:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-  input.big{ font-family: 'Outfit'; font-size: 1.8rem; font-weight: 800; text-align: center; min-height: 64px; }
+  input.big{ font-family: var(--f-num); font-size: 2.2rem; font-weight: 400; text-align: center; min-height: 66px; letter-spacing: 0.02em; }
   .unit-in{ position: relative; flex: 1; }
-  .unit-in em{ position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-style: normal; font-weight: 600; pointer-events: none; }
+  .unit-in em{ position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-style: normal; font-weight: 700; pointer-events: none; }
   .two{ display: flex; gap: 8px; }
   .emojis{ display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
-  .emojis label{ display: grid; place-items: center; aspect-ratio: 1; border-radius: 12px; background: var(--surface-2); font-size: 1.3rem; cursor: pointer; border: 2px solid transparent; }
+  .emojis label{ display: grid; place-items: center; aspect-ratio: 1; border-radius: 10px; background: var(--surface-2); font-size: 1.3rem; cursor: pointer; border: 2px solid transparent; }
   .emojis input{ position: absolute; opacity: 0; pointer-events: none; }
-  .emojis input:checked + span{ outline: none; }
   .emojis label:has(input:checked){ border-color: var(--accent); background: var(--accent-dim); }
-  .field > label.toggle, .toggle{ display: flex; margin: 0; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); cursor: pointer; }
-  .toggle .k{ font-size: 0.9rem; font-weight: 600; } .toggle .k small{ display: block; font-weight: 400; color: var(--text-faint); font-size: 0.74rem; }
+  .field > label.toggle, .toggle{ display: flex; margin: 0; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 10px; background: var(--surface-2); cursor: pointer; letter-spacing: normal; text-transform: none; }
+  .toggle .k{ font-size: 0.9rem; font-weight: 600; color: var(--text); } .toggle .k small{ display: block; font-weight: 400; color: var(--text-faint); font-size: 0.74rem; }
   .toggle input{ appearance: none; width: 46px; height: 28px; border-radius: 999px; background: var(--surface-3); position: relative; flex-shrink: 0; cursor: pointer; transition: background .2s; border: 1px solid var(--border-strong); }
   .toggle input::after{ content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--text-dim); transition: transform .2s, background .2s; }
   .toggle input:checked{ background: var(--accent); }
   .toggle input:checked::after{ transform: translateX(18px); background: var(--accent-ink); }
   .who-list{ display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-  .who-btn{ display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--surface-2); border: 1px solid transparent; cursor: pointer; text-align: left; width: 100%; font-weight: 600; }
+  .who-btn{ display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); border: 1px solid var(--border); cursor: pointer; text-align: left; width: 100%; font-weight: 700; }
   .who-btn small{ margin-left: auto; color: var(--text-faint); font-weight: 500; }
   .choice{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .choice button{ padding: 20px 12px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--border-strong); cursor: pointer; font-weight: 700; font-size: 1rem; }
+  .choice button{ padding: 20px 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border-strong); cursor: pointer; font-family: var(--f-head); font-weight: 900; font-size: 0.95rem; letter-spacing: .06em; text-transform: uppercase; }
   .choice button span{ display: block; font-size: 2rem; margin-bottom: 6px; }
   .err{ color: var(--bad); font-size: 0.82rem; margin: -4px 0 12px; min-height: 1em; }
   .rules{ margin: 0; padding: 0; list-style: none; }
   .rules li{ display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--border); font-size: 0.9rem; }
   .rules li:first-child{ border-top: 0; }
-  .rules li b{ color: var(--accent); white-space: nowrap; }
+  .rules li b{ color: var(--accent); white-space: nowrap; font-family: var(--f-num); font-weight: 400; font-size: 1.1rem; }
+  .tiers{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 6px 0 4px; }
+  .tiers div{ text-align: center; font-size: 0.7rem; color: var(--text-dim); }
+  .tiers .torso{ width: 56px; display: block; margin: 0 auto 4px; }
+  .tiers b{ display: block; font-family: var(--f-head); font-size: 0.74rem; color: var(--text); letter-spacing: .06em; }
 
   /* toast */
   .toast{
-    position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + var(--safe-b) + 16px); z-index: 60;
+    position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + var(--safe-b) + 18px); z-index: 60;
     transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
-    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 999px;
-    font-weight: 600; font-size: 0.88rem; max-width: calc(100vw - 32px); text-align: center;
-    transition: opacity .2s, transform .2s;
+    background: var(--plaster); color: #1b150d; padding: 10px 16px; border-radius: 8px; border-left: 4px solid var(--crimson);
+    font-weight: 700; font-size: 0.88rem; max-width: calc(100vw - 32px); text-align: center;
+    transition: opacity .2s, transform .2s; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8);
   }
   .toast.on{ opacity: 1; transform: translate(-50%, 0); }
 
-  .loading{ display: grid; place-items: center; padding: 80px 0; color: var(--text-faint); }
-  .footer{ text-align: center; color: var(--text-faint); font-size: 0.72rem; margin-top: 18px; }
+  .loading{ display: grid; place-items: center; padding: 80px 0; color: var(--text-faint); font-family: var(--f-head); letter-spacing: .1em; text-transform: uppercase; }
+  .footer{ text-align: center; color: var(--text-faint); font-size: 0.68rem; letter-spacing: .14em; text-transform: uppercase; margin-top: 18px; }
+  .footer .meander{ margin: 0 auto 10px; max-width: 160px; }
 
   @media (max-width: 380px){
     .stat-grid{ grid-template-columns: 1fr 1fr; }
-    .hero .big{ font-size: 2.2rem; }
+    .hero .big{ font-size: 2.6rem; }
   }
   @media (prefers-reduced-motion: reduce){ *{ animation: none !important; transition: none !important; } }
 </style>
@@ -406,20 +471,20 @@
 
 <div class="wrap">
   <header class="topbar">
-    <div class="brand"><div class="ball" aria-hidden="true"></div><h1>Belly <span>Must Go</span></h1></div>
+    <div class="brand"><div class="crest"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.2C5 1.6 19 1.6 20.5 7.2 17.6 5.2 6.4 5.2 3.5 7.2Z" fill="#b8281f"/><path fill-rule="evenodd" fill="#d6a548" d="M12 4.6c-5 0-7.6 3.6-7.6 8V19c0 1.2.9 2.2 2.2 2.2H10v-6.2l-2.6-1.9v-2.2h9.2v2.2L14 15v6.2h3.4c1.3 0 2.2-1 2.2-2.2v-6.4c0-4.4-2.6-8-7.6-8Zm-.9 6.5h1.8v4.4h-1.8z"/></svg></div><div><h1>Belly <span>Must Go</span></h1><small>Carve the warrior</small></div></div>
     <span class="pill" id="modePill"><span class="dot"></span><span id="modeText">Connecting…</span></span>
   </header>
   <div id="banner"></div>
-  <main id="view"><div class="loading">Warming up…</div></main>
+  <main id="view"><div class="loading">Sharpening blades…</div></main>
 </div>
 
 <nav class="tabbar" aria-label="Main">
   <div class="tabbar-in">
-    <button class="tab" data-route="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
-    <button class="tab" data-route="boards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21V11H3v10zM15.5 21V4h-7v17zM21 21v-7h-5.5v7z"/></svg>Boards</button>
-    <button class="tab log" data-act="log" aria-label="Log weight or steps"><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+    <button class="tab" data-route="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18L12 3.5zM5.5 9v9M10 9v9M14 9v9M18.5 9v9M3 20.5h18"/></svg>Arena</button>
+    <button class="tab" data-route="boards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21V11H3v10zM15.5 21V4h-7v17zM21 21v-7h-5.5v7z"/></svg>Ranks</button>
+    <button class="tab log" data-act="log" aria-label="Log a weigh-in or march"><span class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
     <button class="tab" data-route="trends"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>Trends</button>
-    <button class="tab" data-route="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Me</button>
+    <button class="tab" data-route="me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c-4.4 0-7 3.2-7 7.4V19a1.8 1.8 0 0 0 1.8 1.8H10v-5.5l-2.4-1.8v-2.2h8.8v2.2L14 15.3v5.5h3.2A1.8 1.8 0 0 0 19 19v-8.1c0-4.2-2.6-7.4-7-7.4z"/></svg>Warrior</button>
   </div>
 </nav>
 
@@ -445,9 +510,78 @@ const GROUP_ID = "belly-must-go";
 const LIVE = !!FIREBASE_CONFIG.apiKey;
 const FIREBASE_VERSION = "10.7.1";
 
-const EMOJIS = ["🦍","🐻","🦁","🐯","🦊","🐺","🐗","🐼","🦏","🐘","🦈","🐊","🦅","🐙","🦖","🐝","🍑","🌶️","🔥","⚡","🎾","💪","👑","🚀"];
+const EMOJIS = ["⚔️","🛡️","🏛️","🔱","🏹","🗡️","🪓","🥊","🦁","🐺","🐗","🦅","🐂","🐍","🦂","🐎","🦍","🐻","🦈","🐉","🔥","⚡","👑","🎾"];
+// Rank earned by % of body weight lost this campaign. Each rank carves the torso further.
+const TIERS = [["Recruit", -Infinity], ["Hoplite", 1], ["Gladiator", 3], ["Spartan", 5], ["Champion", 8], ["Immortal", 12]];
+// One a day on the Arena screen.
+const QUOTES = [
+  ["Strength and honour.", "Gladiator"],
+  ["What we do in life echoes in eternity.", "Gladiator"],
+  ["Are you not entertained?", "Gladiator"],
+  ["Win the crowd and you will win your freedom.", "Gladiator"],
+  ["Spartans! Prepare for glory!", "300"],
+  ["Give them nothing. But take from them everything.", "300"],
+  ["Come back with your shield — or on it.", "Spartan mothers"],
+  ["Sweat more in training, bleed less in war.", "Spartan saying"],
+  ["Molon labe. Come and take them.", "Leonidas, Thermopylae"],
+  ["Immortality! Take it — it's yours!", "Troy"],
+  ["It ain't about how hard you hit. It's about how hard you can get hit and keep moving forward.", "Rocky Balboa"],
+  ["In search of the perfect physique.", "Physical: 100"]
+];
 const KG_PER_LB = 0.45359237;
 const POINTS = { perPct: 10, perGoalDay: 1, perWeighWeek: 3, perWeeklyWin: 5 };
+
+function tierOf(chgPct) {
+  const lost = chgPct == null ? 0 : -chgPct;
+  let i = 0;
+  while (i + 1 < TIERS.length && lost >= TIERS[i + 1][1]) i++;
+  const next = TIERS[i + 1], floor = i === 0 ? 0 : TIERS[i][1];
+  return {
+    i, name: TIERS[i][0],
+    next: next ? { name: next[0], at: next[1] } : null,
+    toNext: next ? next[1] - lost : 0,
+    prog: next ? Math.max(0, Math.min(1, (lost - floor) / (next[1] - floor))) : 1
+  };
+}
+const roman = n => {
+  let out = "";
+  for (const [v, r] of [[1000, "M"], [900, "CM"], [500, "D"], [400, "CD"], [100, "C"], [90, "XC"], [50, "L"], [40, "XL"], [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]])
+    while (n >= v) { out += r; n -= v; }
+  return out || "–";
+};
+
+// Physical: 100-style plaster torso: level 0 (soft) → 5 (fully carved). variant: "plaster" | "gold" ; cracked: bool
+function torsoSVG(level, { variant = "plaster", cracked = false, uid = "t" } = {}) {
+  const b = Math.max(0, 1 - level / 3);            // belly bulge 1 → 0 by level 3
+  const s = level >= 4 ? 3 : level >= 2 ? 1.5 : 0;  // shoulder broadening
+  const L = (x) => x.toFixed(1);
+  const body = `M40,9 C30,12 ${L(16 - s)},12 ${L(10 - s)},20 C${L(5 - s)},27 ${L(8 - s)},37 ${L(15 - s * .6)},43
+    C${L(18 - b * 2)},53 ${L(19 - b * 8)},66 ${L(21 - b * 10)},78 C${L(22 - b * 10)},90 ${L(26 - b * 6)},100 31,109
+    L69,109 C${L(74 + b * 6)},100 ${L(78 + b * 10)},90 ${L(79 + b * 10)},78 C${L(81 + b * 8)},66 ${L(82 + b * 2)},53 ${L(85 + s * .6)},43
+    C${L(92 + s)},37 ${L(95 + s)},27 ${L(90 + s)},20 C${L(84 + s)},12 70,12 60,9 Z`;
+  const pal = variant === "gold"
+    ? ["#fff3c4", "#e2b24e", "#8a5f14", "rgba(90,55,5,.55)", "rgba(255,246,210,.7)"]
+    : ["#fbf7ef", "#d9d1c3", "#8d8475", "rgba(70,58,44,.42)", "rgba(255,255,255,.65)"];
+  const lines = [];
+  if (level === 0) lines.push("M29,82 Q50,104 71,82");
+  if (level >= 1) lines.push("M21,41 Q34,51 48,45", "M79,41 Q66,51 52,45", "M50,25 L50,45");
+  if (level >= 2) lines.push(`M50,47 L50,${level >= 4 ? 100 : 92}`, "M39,57 Q44,59 49,57", "M51,57 Q56,59 61,57");
+  if (level >= 3) lines.push("M39,68 Q44,70 49,68", "M51,68 Q56,70 61,68", "M38,50 L37,80", "M62,50 L63,80");
+  if (level >= 4) lines.push("M40,79 Q44,81 49,79", "M51,79 Q56,81 60,79", "M27,56 Q31,70 33,86", "M73,56 Q69,70 67,86");
+  if (level >= 5) lines.push("M34,88 Q42,99 47,109", "M66,88 Q58,99 53,109", "M15,44 Q13,52 17,58", "M85,44 Q87,52 83,58");
+  const cracks = cracked ? `<path d="M58,10 L54,24 L60,33 L53,47 L57,58 L50,70 M54,24 L46,28 M53,47 L44,50 M57,58 L66,62 M26,60 L33,66 L30,74 L37,82" fill="none" stroke="#2a211a" stroke-width="1.6" stroke-linejoin="bevel" opacity=".85"/>` : "";
+  return `<svg viewBox="0 0 100 112" aria-hidden="true" class="torso">
+    <defs><radialGradient id="${uid}g" cx=".42" cy=".3" r=".8"><stop offset="0" stop-color="${pal[0]}"/><stop offset=".55" stop-color="${pal[1]}"/><stop offset="1" stop-color="${pal[2]}"/></radialGradient></defs>
+    <rect x="41" y="0" width="18" height="13" rx="6" fill="url(#${uid}g)"/>
+    <path d="${body}" fill="url(#${uid}g)"/>
+    <g fill="none" stroke-linecap="round">
+      <path d="${lines.join(" ")}" stroke="${pal[4]}" stroke-width="1.4" transform="translate(.8 1)"/>
+      <path d="${lines.join(" ")}" stroke="${pal[3]}" stroke-width="2"/>
+    </g>
+    <ellipse cx="50" cy="${level >= 4 ? 92 : 90}" rx="1.6" ry="2.2" fill="${pal[3]}"/>${cracks}
+  </svg>`;
+}
+
 
 /* ---------------------------------------------------------------------
    Small utilities
@@ -548,7 +682,7 @@ let store;
 
 /* ---- Demo store: localStorage, seeded with sample players ---- */
 function makeDemoStore(onChange) {
-  const KEY = "bmg.demo.v1";
+  const KEY = "bmg.demo.v2";
   let data;
   try { data = JSON.parse(localStorage.getItem(KEY)); } catch {}
   if (!data || !data.group) data = seedDemo();
@@ -582,10 +716,10 @@ function seedDemo() {
   const cast = [
     { name: "Big Dave", emoji: "🦍", kg: 124, rate: -0.95, target: 105, show: false, steps: 8200 },
     { name: "Robbo", emoji: "🐗", kg: 98, rate: -0.7, target: 88, show: true, steps: 11800 },
-    { name: "Dani", emoji: "🦊", kg: 76, rate: -0.45, target: 70, show: false, steps: 13400 },
+    { name: "Dani", emoji: "🐺", kg: 76, rate: -0.45, target: 70, show: false, steps: 13400 },
     { name: "Jonno", emoji: "🐻", kg: 109, rate: 0.12, target: 95, show: true, steps: 7100 },
-    { name: "Priya", emoji: "🔥", kg: 68, rate: -0.38, target: null, show: false, steps: 12100 },
-    { name: "Gaz", emoji: "🦈", kg: 133, rate: -1.1, target: 110, show: false, steps: 9600 }
+    { name: "Priya", emoji: "🏹", kg: 68, rate: -0.38, target: null, show: false, steps: 12100 },
+    { name: "Gaz", emoji: "🔱", kg: 133, rate: -1.1, target: 110, show: false, steps: 9600 }
   ];
   const players = [], weighins = [], steps = [];
   cast.forEach((c, i) => {
@@ -775,11 +909,11 @@ function row({ p, rank, main, mainTone = "", small = "", sub = "", mv = "" }) {
 
 function render() {
   const view = $("#view");
-  $("#modeText").textContent = LIVE ? "Live" : "Demo";
+  $("#modeText").textContent = LIVE ? "Live" : "Training";
   $("#modePill").classList.toggle("demo", !LIVE);
-  $("#banner").innerHTML = LIVE ? "" : `<div class="banner"><span>Demo mode — sample crew, saved on this device only.</span><button data-act="reset-demo">Reset</button></div>`;
+  $("#banner").innerHTML = LIVE ? "" : `<div class="banner"><span>Training grounds — a sample legion, saved on this device only.</span><button data-act="reset-demo">Reset</button></div>`;
   document.querySelectorAll(".tab[data-route]").forEach(t => t.classList.toggle("on", t.dataset.route === route));
-  if (!state.ready || !state.group) { view.innerHTML = `<div class="loading">Warming up…</div>`; return; }
+  if (!state.ready || !state.group) { view.innerHTML = `<div class="loading">Sharpening blades…</div>`; return; }
   if (meId && !player(meId)) { meId = null; prefs.del(ME_KEY); }
   const C = compute();
   const views = { home: renderHome, boards: renderBoards, trends: renderTrends, me: renderMe };
@@ -790,112 +924,125 @@ function render() {
 
 /* ---------- HOME ---------- */
 function renderHome(C) {
-  const { stats, list, goal } = C;
+  const { list, goal } = C;
   const weighed = list.filter(x => x.chgKg != null);
   const groupKg = weighed.reduce((a, x) => a + x.chgKg, 0);
   const downCount = weighed.filter(x => x.chgKg < 0).length;
   const startsIn = dayDiff(C.asOf, C.start);
+  const [quote, source] = QUOTES[((dayNum(C.asOf) % QUOTES.length) + QUOTES.length) % QUOTES.length];
 
   let html = `<div class="season">
-    ${startsIn > 0 ? `<span class="pill">Season starts in ${startsIn} day${startsIn > 1 ? "s" : ""}</span>` : `<span class="pill">Week ${C.weekNo} · Day ${C.seasonDay}</span>`}
-    <span class="pill">🥾 Goal ${fmtInt(goal)} steps/day</span>
-    <span class="pill">${list.length} in the squad</span>
-  </div>`;
+    ${startsIn > 0 ? `<span class="pill">Campaign begins in ${startsIn} day${startsIn > 1 ? "s" : ""}</span>` : `<span class="pill">Battle ${C.weekNo} · Day ${C.seasonDay}</span>`}
+    <span class="pill">🥾 March ${fmtInt(goal)}/day</span>
+    <span class="pill">⚔️ ${list.length} warrior${list.length === 1 ? "" : "s"}</span>
+  </div>
+  <div class="quote"><q>${esc(quote)}</q><cite>${esc(source)}</cite></div>`;
 
-  html += `<section class="card hero">
-    <div class="eyebrow">Squad total since ${esc(fmtDate(C.start))}</div>
+  html += `<section class="card hero"><div class="meander"></div>
+    <div class="eyebrow">The legion has shed · since ${esc(fmtDate(C.start))}</div>
     <div class="hero-row">
       <div><div class="big num">${weighed.length ? fmtDelta(groupKg) : "—"}</div>
-      <div class="cap">${downCount} of ${list.length} heading the right way</div></div>
+      <div class="cap">${downCount} of ${list.length} warriors advancing</div></div>
       <div class="hero-stats">
-        <div><b class="num">${fmtK(list.reduce((a, x) => a + (x.stepsToday || 0), 0))}</b><span>steps today</span></div>
-        <div><b class="num">${list.filter(x => (x.stepsToday || 0) >= goal).length}/${list.length}</b><span>hit goal</span></div>
+        <div><b class="num">${fmtK(list.reduce((a, x) => a + (x.stepsToday || 0), 0))}</b><span>marched today</span></div>
+        <div><b class="num">${list.filter(x => (x.stepsToday || 0) >= goal).length}/${list.length}</b><span>held the line</span></div>
       </div>
     </div>
   </section>`;
 
   html += renderMyCard(C);
+  html += renderPantheon(C);
 
-  // Awards from the last completed week
+  // Honours from the last completed battle (week)
   const lw = C.weeks[C.weeks.length - 1];
   if (lw && (lw.winners.length || lw.gainers.length)) {
     const w = lw.winners[0], g = lw.gainers[0];
-    html += `<section class="card"><div class="card-h"><h2>Week ${lw.n} awards</h2><span class="meta">${esc(fmtDate(lw.wk))} – ${esc(fmtDate(addDays(lw.wk, 6)))}</span></div>
+    html += `<section class="card"><div class="card-h"><h2>Battle ${lw.n} honours</h2><span class="meta">${esc(fmtDate(lw.wk))} – ${esc(fmtDate(addDays(lw.wk, 6)))}</span></div>
       <div class="awards">
-        ${w ? `<button class="award win" data-act="player" data-id="${esc(w.pid)}"><div class="t">🥇 Biggest Loser</div><div class="n">${player(w.pid).emoji} ${lw.winners.map(x => name(player(x.pid))).join(" & ")}</div><div class="v good num">${fmtPct(w.ch.pct)} · ${fmtDelta(w.ch.kg)}</div></button>` : `<div class="award"><div class="t">🥇 Biggest Loser</div><div class="n faint">Nobody</div></div>`}
-        ${g ? `<button class="award shame" data-act="player" data-id="${esc(g.pid)}"><div class="t">🍩 Hall of Shame</div><div class="n">${player(g.pid).emoji} ${lw.gainers.map(x => name(player(x.pid))).join(" & ")}</div><div class="v bad num">${fmtPct(g.ch.pct)} · ${fmtDelta(g.ch.kg)}</div></button>` : `<div class="award"><div class="t">🍩 Hall of Shame</div><div class="n good">Clean sheet</div><div class="v faint">Nobody gained</div></div>`}
+        ${w ? `<button class="award win" data-act="player" data-id="${esc(w.pid)}"><div class="t">🌿 Champion</div><div class="n">${esc(player(w.pid).emoji)} ${lw.winners.map(x => name(player(x.pid))).join(" & ")}</div><div class="v good num">${fmtPct(w.ch.pct)} · ${fmtDelta(w.ch.kg)}</div></button>` : `<div class="award"><div class="t">🌿 Champion</div><div class="n faint">No victor</div></div>`}
+        ${g ? `<button class="award shame" data-act="player" data-id="${esc(g.pid)}"><div class="t">👎 Thumbs down</div><div class="n">${esc(player(g.pid).emoji)} ${lw.gainers.map(x => name(player(x.pid))).join(" & ")}</div><div class="v bad num">${fmtPct(g.ch.pct)} · ${fmtDelta(g.ch.kg)}</div></button>` : `<div class="award"><div class="t">👍 Thumbs up</div><div class="n good">None fell</div><div class="v faint">Every warrior held</div></div>`}
       </div></section>`;
   }
 
-  // Podium (overall)
-  const top = [...list].sort((a, b) => C.ranks.overall[a.p.id] - C.ranks.overall[b.p.id]).slice(0, 3);
-  if (top.length) {
-    const order = [top[1], top[0], top[2]];
-    html += `<section class="card"><div class="card-h"><h2>Belly Points</h2><button class="link" data-route="boards" data-board="overall">Full table →</button></div>
-      <div class="podium">${order.map((x, i) => x ? `<button class="pod p${[2, 1, 3][i]}" data-act="player" data-id="${esc(x.p.id)}">
-        ${av(x.p)}<div class="nm">${name(x.p)}</div><div class="pv num">${x.points} pts</div><div class="step">${C.ranks.overall[x.p.id]}</div></button>` : "<div></div>").join("")}</div>
-    </section>`;
-  }
-
-  // Today's step race
+  // Today's march
   const race = [...list].sort((a, b) => (b.stepsToday ?? -1) - (a.stepsToday ?? -1));
-  html += `<section class="card"><div class="card-h"><h2>Today's step race</h2><button class="link" data-act="log-steps">Log steps</button></div>
+  html += `<section class="card"><div class="card-h"><h2>Today's march</h2><button class="link" data-act="log-steps">Log march</button></div>
     <div class="race">${race.map(x => {
       const v = x.stepsToday, hit = (v || 0) >= goal;
       return `<button class="race-row" data-act="player" data-id="${esc(x.p.id)}">${av(x.p, "sm")}
-        <div><div class="top"><span>${name(x.p)}${x.p.id === meId ? ` <span class="tag">YOU</span>` : ""}</span><span class="num">${v == null ? "not logged" : fmtInt(v)}</span></div>
+        <div><div class="top"><span>${name(x.p)}${x.p.id === meId ? ` <span class="tag">You</span>` : ""}</span><span class="num">${v == null ? "not logged" : fmtInt(v)}</span></div>
         <div class="bar ${hit ? "hit" : ""}"><i style="width:${Math.min(100, (v || 0) / goal * 100)}%"></i></div></div>
-        <span class="ok" aria-label="${hit ? "goal hit" : ""}">${hit ? "✅" : ""}</span></button>`;
-    }).join("") || `<p class="empty">No one here yet.</p>`}</div></section>`;
+        <span class="ok" aria-label="${hit ? "goal hit" : ""}">${hit ? "🛡️" : ""}</span></button>`;
+    }).join("") || `<p class="empty">The arena is empty.</p>`}</div></section>`;
 
-  // Dodging the scales
+  // Deserters
   const dodgers = list.filter(x => x.daysSinceWeigh == null || x.daysSinceWeigh >= 7).sort((a, b) => (b.daysSinceWeigh ?? 999) - (a.daysSinceWeigh ?? 999));
   if (dodgers.length && C.seasonDay > 0) {
-    html += `<section class="card"><div class="card-h"><h2>Dodging the scales 👀</h2><span class="meta">7+ days since a weigh-in</span></div>
+    html += `<section class="card"><div class="card-h"><h2>Deserters 👀</h2><span class="meta">7+ days avoiding the scales</span></div>
       <div class="dodgers">${dodgers.map(x => `<button class="dodger" data-act="player" data-id="${esc(x.p.id)}">${av(x.p)}${name(x.p)} <small>${x.daysSinceWeigh == null ? "never" : x.daysSinceWeigh + "d"}</small></button>`).join("")}</div></section>`;
   }
 
-  // Banter feed
+  // Battle chronicle
   const feedFull = buildFeed(C), feed = feedAll ? feedFull : feedFull.slice(0, 10);
-  html += `<section class="card"><div class="card-h"><h2>Banter board</h2><span class="meta">Latest activity</span></div>
+  html += `<section class="card"><div class="card-h"><h2>Battle chronicle</h2><span class="meta">Latest deeds</span></div>
     <div class="feed">${feed.length ? feed.map(e => `<div class="ev">${av(e.p, "sm")}<div>
       <div class="tx">${e.full ?? `<b>${name(e.p)}</b> ${e.html}`}${e.tags?.length ? `<span class="tags">${e.tags.map(t => `<span class="tag">${t}</span>`).join("")}</span>` : ""}</div>
-      <div class="when">${esc(relDay(e.date))}</div></div></div>`).join("") : `<p class="empty">Nothing yet. First to the scales sets the pace.</p>`}</div>
+      <div class="when">${esc(relDay(e.date))}</div></div></div>`).join("") : `<p class="empty">No deeds yet. First to the scales draws first blood.</p>`}</div>
     ${feedFull.length > 10 ? `<div class="btn-row"><button class="btn" data-act="feed-more">${feedAll ? "Show less" : "Show more"}</button></div>` : ""}</section>`;
 
   return html;
 }
 
+function renderPantheon(C) {
+  const order = [...C.list].sort((a, b) => C.ranks.overall[a.p.id] - C.ranks.overall[b.p.id]);
+  if (!order.length) return "";
+  return `<section class="card pantheon-card"><div class="card-h"><h2>The Pantheon</h2><button class="link" data-route="boards" data-board="overall">Full ranks →</button></div>
+    <p class="faint" style="margin:-6px 0 4px;font-size:.74rem">Every torso carves itself as its owner loses weight. Gold for the leader. Cracked = gained this battle.</p>
+    <div class="pantheon">${order.map(x => {
+      const r = C.ranks.overall[x.p.id], t = tierOf(x.chgPct), fallen = !!(x.week && x.week.pct > 0);
+      return `<button class="statue ${r === 1 ? "lead" : ""} ${x.p.id === meId ? "me" : ""}" data-act="player" data-id="${esc(x.p.id)}" aria-label="${name(x.p)}: rank ${r}, ${t.name}${fallen ? ", gained this week" : ""}">
+        ${torsoSVG(t.i, { variant: r === 1 ? "gold" : "plaster", cracked: fallen, uid: "pa" + x.p.id })}
+        <div class="pct num ${tone(x.chgPct)}">${fmtPct(x.chgPct)}</div>
+        <div class="plinth" style="min-height:${Math.max(46, 86 - (r - 1) * 8)}px"><span class="rkn">${roman(r)}</span><span class="nm">${name(x.p)}</span></div></button>`;
+    }).join("")}</div></section>`;
+}
+
 function renderMyCard(C) {
   const m = me();
   if (!m) {
-    return `<section class="card"><div class="card-h"><h2>You're spectating</h2></div>
-      <p class="faint" style="margin:0 0 4px;font-size:.9rem">Join the squad to log your weigh-ins and steps.</p>
-      <div class="btn-row"><button class="btn primary" data-act="who">Join / pick yourself</button></div></section>`;
+    return `<section class="card"><div class="card-h"><h2>You're in the stands</h2></div>
+      <p class="faint" style="margin:0 0 4px;font-size:.9rem">Enlist to log your weigh-ins and marches and earn your place in the Pantheon.</p>
+      <div class="btn-row"><button class="btn primary" data-act="who">Enter the arena</button></div></section>`;
   }
   const x = C.stats[m.id];
   const rank = C.ranks.overall[m.id];
   const goal = C.goal;
-  // the gap to the player directly above on the fair (% body weight) board
+  const t = tierOf(x.chgPct);
+  // the gap to the warrior directly above on the fair (% body weight) board
   let nudge = "";
   const pr = C.ranks.pct[m.id];
   if (pr != null) {
     const above = C.list.filter(o => C.ranks.pct[o.p.id] === pr - 1)[0];
-    if (above) nudge = `<b>${fmtPct(x.chgPct - above.chgPct).replace(/^[+−±]/, "")}</b> of body weight behind ${name(above.p)} for #${pr - 1} on the Body % board.`;
+    if (above) nudge = `<b>${Math.abs(x.chgPct - above.chgPct).toFixed(1)}%</b> of body weight behind ${name(above.p)} for ${roman(pr - 1)} on the Body % board. Close the gap.`;
     else if (pr === 1 && C.list.length > 1) {
       const next = C.list.filter(o => C.ranks.pct[o.p.id] === 2)[0];
-      nudge = next ? `You're top of the Body % board — <b>${Math.abs(x.chgPct - next.chgPct).toFixed(1)}%</b> clear of ${name(next.p)}. Don't get comfy.` : "";
+      nudge = next ? `You hold the summit — <b>${Math.abs(x.chgPct - next.chgPct).toFixed(1)}%</b> clear of ${name(next.p)}. They're coming for you.` : "";
     }
-  } else nudge = "Log your first weigh-in to get on the board.";
+  } else nudge = "Face the scales to claim your place in the Pantheon.";
   const stepsPct = Math.min(100, (x.stepsToday || 0) / goal * 100);
   return `<section class="card">
-    <div class="me-top">${av(m, "lg")}<div style="min-width:0;flex:1"><div class="me-name">${name(m)}</div>
-      <div class="me-sub">#${rank} overall · ${x.points} Belly Points</div></div>
-      <div style="text-align:right"><div class="num ${tone(x.chgPct)}" style="font-family:Outfit;font-weight:900;font-size:1.5rem">${fmtPct(x.chgPct)}</div><div class="me-sub num">${fmtDelta(x.chgKg)}</div></div></div>
-    <div style="margin-top:14px"><div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:6px"><span class="faint">Steps today</span><span class="num">${x.stepsToday == null ? "—" : fmtInt(x.stepsToday)} / ${fmtInt(goal)}</span></div>
+    <div class="me-top"><div class="me-statue">${torsoSVG(t.i, { variant: rank === 1 ? "gold" : "plaster", cracked: !!(x.week && x.week.pct > 0), uid: "mc" })}</div>
+      <div style="min-width:0;flex:1"><div class="me-name">${name(m)}</div>
+      <div style="margin:4px 0 3px"><span class="tier t${t.i}">${esc(t.name)}</span></div>
+      <div class="me-sub">Rank ${roman(rank)} · ${x.points} glory</div></div>
+      <div style="text-align:right"><div class="big-pct num ${tone(x.chgPct)}">${fmtPct(x.chgPct)}</div><div class="me-sub num">${fmtDelta(x.chgKg)}</div></div></div>
+    <div class="forge">${t.next
+      ? `<div style="display:flex;justify-content:space-between;gap:8px"><span>Next rank: <b style="color:var(--text)">${esc(t.next.name)}</b></span><span class="num">${t.toNext.toFixed(1)}% left to carve</span></div><div class="bar"><i style="width:${t.prog * 100}%"></i></div>`
+      : `<b style="color:var(--accent-2)">Immortal.</b> Nothing left to carve. Defend the crown.`}</div>
+    <div class="forge"><div style="display:flex;justify-content:space-between"><span>Today's march</span><span class="num">${x.stepsToday == null ? "—" : fmtInt(x.stepsToday)} / ${fmtInt(goal)}</span></div>
       <div class="bar ${stepsPct >= 100 ? "hit" : ""}"><i style="width:${stepsPct}%"></i></div></div>
     ${nudge ? `<div class="nudge">${nudge}</div>` : ""}
-    <div class="btn-row"><button class="btn primary" data-act="log-weight">⚖️ Weigh in</button><button class="btn" data-act="log-steps">🥾 Log steps</button></div>
+    <div class="btn-row"><button class="btn primary" data-act="log-weight">⚖️ Face the scales</button><button class="btn" data-act="log-steps">🥾 March</button></div>
   </section>`;
 }
 
@@ -903,31 +1050,31 @@ function buildFeed(C) {
   const ev = [];
   for (const x of C.list) {
     const { p, w } = x;
-    let low = Infinity, milestone = 0;
+    let low = Infinity, bestTier = 0;
     w.forEach((e, i) => {
-      if (i === 0) { ev.push({ p, date: e.date, ts: e.ts || 0, html: "stepped on the scales for the first time. Game on." }); low = e.kg; return; }
+      if (i === 0) { ev.push({ p, date: e.date, ts: e.ts || 0, html: "entered the arena. First weigh-in carved in stone." }); low = e.kg; return; }
       const d = e.kg - w[i - 1].kg;
       const tags = [];
-      const html = d < -0.004 ? `dropped <b class="good">${fmtDelta(d)}</b>` : d > 0.004 ? `put on <b class="bad">${fmtDelta(d)}</b> 🍩` : "held steady on the scales";
-      if (e.kg < low) { if (d < 0) tags.push("new low 🏆"); low = e.kg; }
-      const pct = (w[0].kg - e.kg) / w[0].kg * 100, m = Math.floor(pct / 5) * 5;
-      if (m >= 5 && m > milestone) { tags.push(`${m}% down 🎉`); milestone = m; }
+      const html = d < -0.004 ? `carved off <b class="good">${fmtDelta(d)}</b>` : d > 0.004 ? `took a hit: <b class="bad">${fmtDelta(d)}</b> 🍩` : "held the line on the scales";
+      if (e.kg < low) { if (d < 0) tags.push("new low 🗡️"); low = e.kg; }
+      const ti = tierOf((e.kg - w[0].kg) / w[0].kg * 100).i;
+      if (ti > bestTier) { tags.push(`rank up: ${TIERS[ti][0]} 🏛️`); bestTier = ti; }
       ev.push({ p, date: e.date, ts: e.ts || 0, html, tags });
     });
   }
-  // step goal hits grouped per day; monster days called out individually
+  // step goal hits grouped per day; double-goal days called out individually
   const byDay = new Map();
   for (const x of C.list) for (const [date, v] of x.s) {
-    if (v >= C.goal * 2) ev.push({ p: x.p, date, ts: 1, html: `went full mountain goat: <b>${fmtInt(v)}</b> steps 🔥` });
+    if (v >= C.goal * 2) ev.push({ p: x.p, date, ts: 1, html: `marched like a Spartan: <b>${fmtInt(v)}</b> steps 🔥` });
     else if (v >= C.goal) { if (!byDay.has(date)) byDay.set(date, []); byDay.get(date).push(x.p); }
   }
   for (const [date, ps] of byDay) {
     const names = ps.map(p => `<b>${name(p)}</b>`);
     const joined = names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0];
-    ev.push({ p: { emoji: "🥾" }, date, ts: 0, full: `${joined} hit the step goal` });
+    ev.push({ p: { emoji: "🛡️" }, date, ts: 0, full: `${joined} held the line — march goal hit` });
   }
   for (const wk of C.weeks) {
-    for (const c of wk.winners) ev.push({ p: player(c.pid), date: addDays(wk.wk, 6), ts: 2, html: `won <b>Biggest Loser</b> of week ${wk.n} (${fmtPct(c.ch.pct)}) 🥇` });
+    for (const c of wk.winners) ev.push({ p: player(c.pid), date: addDays(wk.wk, 6), ts: 2, html: `was crowned <b>Champion</b> of battle ${wk.n} (${fmtPct(c.ch.pct)}) 🌿` });
   }
   ev.sort((a, b) => a.date < b.date ? 1 : a.date > b.date ? -1 : (b.ts - a.ts));
   return ev.slice(0, 30);
@@ -938,8 +1085,8 @@ let feedAll = false;
 let board = "overall";
 let stepsRange = "today";
 const BOARDS = [
-  ["overall", "🏆 Overall"], ["pct", "⚖️ Body %"], ["kg", "📉 Weight lost"], ["week", "📅 This week"],
-  ["steps", "🥾 Steps"], ["streaks", "🔥 Streaks"], ["target", "🎯 Targets"]
+  ["overall", "🏛️ Glory"], ["pct", "⚖️ Body %"], ["kg", "🪓 Weight shed"], ["week", "⚔️ This battle"],
+  ["steps", "🥾 The march"], ["streaks", "🥊 Montage"], ["target", "🎯 Conquest"]
 ];
 
 function renderBoards(C) {
@@ -951,10 +1098,10 @@ function renderBoards(C) {
 
   if (board === "overall") {
     const rk = C.ranks.overall;
-    html += card("Belly Points", `<button class="link" data-act="points-info">How it works</button>`,
+    html += card("Glory", `<button class="link" data-act="points-info">The laws</button>`,
       sortRank([...L], rk).map(x => row({
         p: x.p, rank: rk[x.p.id], main: `${x.points} pts`, small: fmtPct(x.chgPct),
-        sub: `${x.pts.loss} wt · ${x.pts.steps} steps · ${x.pts.weigh} wk${x.wins ? ` · ${x.wins}🥇` : ""}`,
+        sub: `${esc(tierOf(x.chgPct).name)}${x.wins ? ` · ${x.wins}🌿` : ""} · ${x.goalDays} march days`,
         mv: movement(x.p.id, rk[x.p.id], prev?.ranks.overall)
       })).join(""));
   }
@@ -971,7 +1118,7 @@ function renderBoards(C) {
   if (board === "kg") {
     const withW = L.filter(x => x.chgKg != null);
     const rk = rankMap(withW, x => x.chgKg, true);
-    html += card("Weight lost", `<span class="meta">Raw ${unit === "kg" ? "kg" : "lb"} — big lads' board</span>`,
+    html += card("Weight shed", `<span class="meta">Raw ${unit === "kg" ? "kg" : "lb"} — the heavyweights' board</span>`,
       sortRank(withW, rk).map(x => row({
         p: x.p, rank: rk[x.p.id], main: fmtDelta(x.chgKg), mainTone: tone(x.chgKg), small: fmtPct(x.chgPct),
         sub: canSeeWeight(x.p) ? `${fmtWeight(x.startKg)} → ${fmtWeight(x.curKg)}` : `Low point ${fmtDelta(x.lowKg - x.startKg)}`
@@ -981,18 +1128,18 @@ function renderBoards(C) {
     const withW = L.filter(x => x.week);
     const rk = rankMap(withW, x => x.week.pct, true);
     const missing = L.filter(x => !x.week);
-    html += card("This week", `<span class="meta">Since last week's final weigh-in</span>`,
+    html += card("This battle", `<span class="meta">Mon–Sun · vs last battle's final weigh-in</span>`,
       sortRank(withW, rk).map(x => row({
         p: x.p, rank: rk[x.p.id], main: fmtPct(x.week.pct), mainTone: tone(x.week.pct), small: fmtDelta(x.week.kg),
-        sub: x.week.pct > 0 ? "🍩 Hall of Shame candidate" : x.week.pct < 0 ? "Heading for Biggest Loser" : "Holding"
-      })).join("") + missing.map(x => row({ p: x.p, rank: null, main: "—", sub: "Not weighed in this week 👀" })).join(""));
+        sub: x.week.pct > 0 ? "👎 Thumbs down incoming" : x.week.pct < 0 ? "🌿 In line for Champion" : "Holding the line"
+      })).join("") + missing.map(x => row({ p: x.p, rank: null, main: "—", sub: "Hasn't faced the scales 👀" })).join(""));
     // history of weekly awards
     const done = C.weeks.filter(w => w.winners.length || w.gainers.length).slice().reverse();
     if (done.length) {
-      html += `<section class="card"><div class="card-h"><h2>Roll of honour</h2><span class="meta">Weekly awards</span></div><div class="hist">${done.map(w => `
-        <div class="hrow"><div class="l">Week ${w.n}<small>${esc(fmtDate(w.wk))} – ${esc(fmtDate(addDays(w.wk, 6)))}</small></div>
-        <div style="text-align:right;font-size:.84rem">${w.winners.map(c => `🥇 ${name(player(c.pid))} <span class="good num">${fmtPct(c.ch.pct)}</span>`).join("<br>")}
-        ${w.gainers.map(c => `<br>🍩 ${name(player(c.pid))} <span class="bad num">${fmtPct(c.ch.pct)}</span>`).join("")}</div></div>`).join("")}</div></section>`;
+      html += `<section class="card"><div class="card-h"><h2>Hall of Champions</h2><span class="meta">Every battle</span></div><div class="hist">${done.map(w => `
+        <div class="hrow"><div class="l">Battle ${roman(w.n)}<small>${esc(fmtDate(w.wk))} – ${esc(fmtDate(addDays(w.wk, 6)))}</small></div>
+        <div style="text-align:right;font-size:.84rem">${w.winners.map(c => `🌿 ${name(player(c.pid))} <span class="good num">${fmtPct(c.ch.pct)}</span>`).join("<br>")}
+        ${w.gainers.map(c => `<br>👎 ${name(player(c.pid))} <span class="bad num">${fmtPct(c.ch.pct)}</span>`).join("")}</div></div>`).join("")}</div></section>`;
     }
   }
   if (board === "steps") {
@@ -1000,7 +1147,7 @@ function renderBoards(C) {
     const [, val, target] = ranges[stepsRange];
     const rk = rankMap(L, val, false);
     const seg = `<div class="seg" style="margin-bottom:12px">${Object.entries(ranges).map(([k, [l]]) => `<button class="${stepsRange === k ? "on" : ""}" data-act="steps-range" data-range="${k}">${l}</button>`).join("")}</div>`;
-    html += card("Steps", `<span class="meta">Goal ${fmtInt(C.goal)}/day</span>`,
+    html += card("The march", `<span class="meta">Goal ${fmtInt(C.goal)} steps/day</span>`,
       sortRank([...L], rk).map(x => {
         const v = val(x);
         return row({
@@ -1011,17 +1158,17 @@ function renderBoards(C) {
   }
   if (board === "streaks") {
     const rk1 = rankMap(L, x => x.goalStreak, false), rk2 = rankMap(L, x => x.weighStreak, false);
-    html += card("Step goal streak", `<span class="meta">Consecutive days ≥ ${fmtK(C.goal)}</span>`,
-      sortRank([...L], rk1).map(x => row({ p: x.p, rank: rk1[x.p.id], main: `${x.goalStreak} 🔥`, small: `best day ${fmtK(x.bestDay)}`, sub: `${x.goalDays} goal days this season` })).join(""));
-    html += card("Weigh-in streak", `<span class="meta">Consecutive weeks on the scales</span>`,
+    html += card("Training montage", `<span class="meta">Days in a row ≥ ${fmtK(C.goal)} steps</span>`,
+      sortRank([...L], rk1).map(x => row({ p: x.p, rank: rk1[x.p.id], main: `${x.goalStreak} 🔥`, small: `best day ${fmtK(x.bestDay)}`, sub: `${x.goalDays} march days this campaign` })).join(""));
+    html += card("Shield wall", `<span class="meta">Weeks in a row on the scales</span>`,
       sortRank([...L], rk2).map(x => row({ p: x.p, rank: rk2[x.p.id], main: `${x.weighStreak} wk`, small: `${x.weighWeeks} total`, sub: x.lastWeigh ? `Last weighed ${esc(relDay(x.lastWeigh))}` : "Never weighed in" })).join(""));
   }
   if (board === "target") {
     const withT = L.filter(x => x.target);
     const rk = rankMap(withT, x => x.target.prog, false);
-    html += card("Progress to target", `<span class="meta">Everyone sets their own</span>`,
+    html += card("Conquest", `<span class="meta">Progress to each warrior's own target</span>`,
       sortRank(withT, rk).map(x => row({
-        p: x.p, rank: rk[x.p.id], main: `${Math.round(x.target.prog * 100)}%`, small: x.target.toGo <= 0 ? "Target smashed 🎯" : `${fmtDelta(x.target.toGo).replace(/^[+−±]/, "")} to go`,
+        p: x.p, rank: rk[x.p.id], main: `${Math.round(x.target.prog * 100)}%`, small: x.target.toGo <= 0 ? "Conquered 🎯" : `${fmtDelta(x.target.toGo).replace(/^[+−±]/, "")} to go`,
         sub: `<div class="bar ${x.target.prog >= 1 ? "hit" : ""}"><i style="width:${x.target.prog * 100}%"></i></div>`
       })).join("") + L.filter(x => !x.target).map(x => row({ p: x.p, rank: null, main: "—", sub: "No target set" })).join(""));
   }
@@ -1036,7 +1183,7 @@ function renderTrends(C) {
   const m = me();
   const cmp = compareId && player(compareId) && compareId !== meId ? player(compareId) : null;
   let html = `<section class="card"><div class="card-h"><h2>Body weight change</h2><button class="link" data-act="chart-table">${showTable ? "Chart" : "Table"}</button></div>
-    <p class="faint" style="margin:-6px 0 10px;font-size:.8rem">% change from each player's first weigh-in this season. ${m ? "You're in blue" : "Tap a name to highlight"}${cmp ? `, ${name(cmp)} in orange` : m ? " — tap a name to compare" : ""}.</p>`;
+    <p class="faint" style="margin:-6px 0 10px;font-size:.8rem">% change from each warrior's first weigh-in this campaign. ${m ? "You're in bronze" : "Tap a name to highlight"}${cmp ? `, ${name(cmp)} in blue` : m ? " — tap a rival to compare" : ""}.</p>`;
   if (showTable) {
     const rows = C.list.filter(x => x.chgPct != null).sort((a, b) => a.chgPct - b.chgPct);
     html += `<table class="data"><thead><tr><th>Player</th><th>This week</th><th>Season</th><th>Change</th></tr></thead><tbody>${rows.map(x => `<tr><td>${esc(x.p.emoji)} ${name(x.p)}</td><td class="num ${tone(x.week?.pct)}">${fmtPct(x.week?.pct)}</td><td class="num ${tone(x.chgPct)}">${fmtPct(x.chgPct)}</td><td class="num">${fmtDelta(x.chgKg)}</td></tr>`).join("")}</tbody></table>`;
@@ -1047,7 +1194,7 @@ function renderTrends(C) {
   html += `</section>`;
 
   if (m) {
-    html += `<section class="card"><div class="card-h"><h2>Your steps</h2><span class="meta">Last 14 days</span></div><div class="chart" id="chartSteps"></div></section>`;
+    html += `<section class="card"><div class="card-h"><h2>Your march</h2><span class="meta">Last 14 days</span></div><div class="chart" id="chartSteps"></div></section>`;
   }
 
   // group step averages per week
@@ -1062,8 +1209,8 @@ function renderTrends(C) {
       for (const x of C.list) for (const [d, v] of x.s) if (d >= wk && d < addDays(wk, 7)) { tot += v; if (v >= C.goal) hits++; }
       rowsW.push({ wk, avg: tot / (days * C.list.length), hits, poss: days * C.list.length });
     }
-    html += `<section class="card"><div class="card-h"><h2>Squad steps by week</h2><span class="meta">Avg per person per day</span></div>
-      <table class="data"><thead><tr><th>Week of</th><th>Avg steps</th><th>Goal days hit</th></tr></thead><tbody>
+    html += `<section class="card"><div class="card-h"><h2>The legion's march</h2><span class="meta">Avg steps per warrior per day</span></div>
+      <table class="data"><thead><tr><th>Battle of</th><th>Avg steps</th><th>Goal days hit</th></tr></thead><tbody>
       ${rowsW.reverse().map(r => `<tr><td>${esc(fmtDate(r.wk))}</td><td class="num ${r.avg >= C.goal ? "good" : ""}">${fmtInt(r.avg)}</td><td class="num">${r.hits}/${r.poss}</td></tr>`).join("")}
       </tbody></table></section>`;
   }
@@ -1076,24 +1223,27 @@ function renderMe(C) {
   let html = "";
   if (m) {
     const x = C.stats[m.id];
-    html += `<section class="card"><div class="me-top">${av(m, "lg")}<div style="flex:1;min-width:0"><div class="me-name">${name(m)}</div>
-      <div class="me-sub">${m.showWeight ? "Sharing exact weight" : "Exact weight hidden from the squad"}${m.pinHash ? " · PIN on" : ""}</div></div>
+    const t = tierOf(x.chgPct);
+    html += `<section class="card"><div class="me-top"><div class="me-statue">${torsoSVG(t.i, { variant: C.ranks.overall[m.id] === 1 ? "gold" : "plaster", cracked: !!(x.week && x.week.pct > 0), uid: "me" })}</div>
+      <div style="flex:1;min-width:0"><div class="me-name">${esc(m.emoji)} ${name(m)}</div>
+      <div style="margin:4px 0 3px"><span class="tier t${t.i}">${esc(t.name)}</span></div>
+      <div class="me-sub">${m.showWeight ? "Sharing exact weight" : "Exact weight hidden from the legion"}${m.pinHash ? " · PIN on" : ""}</div></div>
       <button class="btn" style="flex:0;padding:8px 14px;min-height:38px" data-act="edit-profile">Edit</button></div>
       <div class="stat-grid">
         <div class="stat"><b class="num">${fmtWeight(x.curKg)}</b><span>Current</span></div>
-        <div class="stat"><b class="num">${fmtWeight(x.startKg)}</b><span>Season start</span></div>
+        <div class="stat"><b class="num">${fmtWeight(x.startKg)}</b><span>Campaign start</span></div>
         <div class="stat"><b class="num ${tone(x.chgKg)}">${fmtDelta(x.chgKg)}</b><span>Change</span></div>
         <div class="stat"><b class="num">${fmtWeight(x.lowKg)}</b><span>Lowest</span></div>
         <div class="stat"><b class="num">${x.target ? Math.round(x.target.prog * 100) + "%" : "—"}</b><span>${x.target ? "To " + fmtWeight(x.target.kg) : "No target"}</span></div>
         <div class="stat"><b class="num">${fmtInt(x.stepsAvg)}</b><span>Avg steps/day</span></div>
       </div>
       <div class="chart" id="chartMe" style="margin-top:14px"></div></section>`;
-    html += `<section class="card"><div class="card-h"><h2>Points breakdown</h2><button class="link" data-act="points-info">Rules</button></div>
+    html += `<section class="card"><div class="card-h"><h2>Glory earned</h2><button class="link" data-act="points-info">The laws</button></div>
       <ul class="rules">
         <li><span>Weight (${fmtPct(x.chgPct)} × ${POINTS.perPct})</span><b class="num">${x.pts.loss}</b></li>
-        <li><span>Step goal days (${x.goalDays})</span><b class="num">${x.pts.steps}</b></li>
+        <li><span>March goal days (${x.goalDays})</span><b class="num">${x.pts.steps}</b></li>
         <li><span>Weeks weighed in (${x.weighWeeks})</span><b class="num">${x.pts.weigh}</b></li>
-        <li><span>Biggest Loser wins (${x.wins})</span><b class="num">${x.pts.wins}</b></li>
+        <li><span>Champion crowns (${x.wins})</span><b class="num">${x.pts.wins}</b></li>
         <li><span><strong>Total</strong></span><b class="num">${x.points}</b></li>
       </ul></section>`;
     html += historyCard(m.id, true);
@@ -1103,12 +1253,12 @@ function renderMe(C) {
   html += `<section class="card"><div class="card-h"><h2>Settings</h2></div><div class="set">
     <div class="set-row" style="cursor:default"><span class="k">Units<small>Just for this device</small></span>
       <div class="seg">${[["kg", "kg"], ["st", "st & lb"], ["lb", "lb"]].map(([k, l]) => `<button class="${unit === k ? "on" : ""}" data-act="unit" data-unit="${k}">${l}</button>`).join("")}</div></div>
-    <button class="set-row" data-act="group-settings"><span class="k">Season & step goal<small>Shared by the whole squad</small></span><span class="v">${fmtK(state.group.stepGoal)} · from ${esc(fmtDate(state.group.startDate))} ›</span></button>
-    <button class="set-row" data-act="points-info"><span class="k">How Belly Points work</span><span class="v">›</span></button>
-    <button class="set-row" data-act="who"><span class="k">${m ? "Switch player" : "Join / pick yourself"}<small>${m ? "Using someone else's phone?" : "Get on the leaderboard"}</small></span><span class="v">›</span></button>
-    ${LIVE ? "" : `<button class="set-row" data-act="reset-demo"><span class="k">Reset demo data</span><span class="v">›</span></button>`}
+    <button class="set-row" data-act="group-settings"><span class="k">Campaign & march goal<small>Shared by the whole legion</small></span><span class="v">${fmtK(state.group.stepGoal)} · from ${esc(fmtDate(state.group.startDate))} ›</span></button>
+    <button class="set-row" data-act="points-info"><span class="k">The laws of glory<small>Scoring and warrior ranks</small></span><span class="v">›</span></button>
+    <button class="set-row" data-act="who"><span class="k">${m ? "Switch warrior" : "Enter the arena"}<small>${m ? "Using someone else's phone?" : "Claim your place in the Pantheon"}</small></span><span class="v">›</span></button>
+    ${LIVE ? "" : `<button class="set-row" data-act="reset-demo"><span class="k">Reset training grounds</span><span class="v">›</span></button>`}
   </div></section>
-  <p class="footer">${LIVE ? "Live · synced across the squad" : "Demo mode · add Firebase config to go live"} · Belly Must Go</p>`;
+  <div class="footer"><div class="meander"></div>${LIVE ? "Live · synced across the legion" : "Training grounds · add Firebase config to go live"}<br>Strength and honour</div>`;
   return html;
 }
 
@@ -1314,25 +1464,25 @@ async function safe(p, ok) {
 
 function openWho() {
   const ps = [...state.players].sort((a, b) => a.name.localeCompare(b.name));
-  openSheet(`<h2>Who's this?</h2><p class="lead">Pick yourself so your weigh-ins and steps land in the right place.</p>
-    <div class="who-list">${ps.map(p => `<button class="who-btn" data-act="pick-me" data-id="${esc(p.id)}">${av(p, "sm")} ${name(p)}${p.pinHash ? "<small>🔒</small>" : ""}</button>`).join("") || `<p class="empty">No one's joined yet — be the first.</p>`}</div>
-    <div class="btn-row"><button class="btn primary" data-act="join">I'm new — add me</button></div>
-    <div class="btn-row"><button class="btn" data-act="spectate">Just looking</button></div>`, null, { locked: true });
+  openSheet(`<div class="sheet-statue" style="width:84px">${torsoSVG(0, { uid: "who" })}</div><h2 style="text-align:center">Who enters the arena?</h2><p class="lead" style="text-align:center">Choose your warrior so your weigh-ins and marches land in the right place.</p>
+    <div class="who-list">${ps.map(p => `<button class="who-btn" data-act="pick-me" data-id="${esc(p.id)}">${av(p, "sm")} ${name(p)}${p.pinHash ? "<small>🔒</small>" : ""}</button>`).join("") || `<p class="empty">The arena is empty. Be the first.</p>`}</div>
+    <div class="btn-row"><button class="btn primary" data-act="join">New recruit — enlist me</button></div>
+    <div class="btn-row"><button class="btn" data-act="spectate">Watch from the stands</button></div>`, null, { locked: true });
 }
 
 function profileForm(p, isNew) {
   return `<form id="pf" autocomplete="off">
-    <div class="field"><label for="pf-name">Name</label><input id="pf-name" type="text" name="name" maxlength="20" required value="${esc(p?.name || "")}" placeholder="What the lads call you"></div>
-    <div class="field"><span class="lab">Pick your animal</span><div class="emojis">${EMOJIS.map((e, i) => `<label><input type="radio" name="emoji" value="${e}" ${(p ? p.emoji === e : i === 0) ? "checked" : ""}><span>${e}</span></label>`).join("")}</div></div>
-    ${isNew ? `<div class="field"><span class="lab">Starting weight (today's weigh-in)</span>${weightInput("start", null)}</div>` : ""}
+    <div class="field"><label for="pf-name">Name</label><input id="pf-name" type="text" name="name" maxlength="20" required value="${esc(p?.name || "")}" placeholder="Your battle name"></div>
+    <div class="field"><span class="lab">Choose your sigil</span><div class="emojis">${EMOJIS.map((e, i) => `<label><input type="radio" name="emoji" value="${e}" ${(p ? p.emoji === e : i === 0) ? "checked" : ""}><span>${e}</span></label>`).join("")}</div></div>
+    ${isNew ? `<div class="field"><span class="lab">Starting weight — your block of marble</span>${weightInput("start", null)}</div>` : ""}
     <div class="field"><span class="lab">Target weight <span class="faint">(optional)</span></span>${weightInput("target", p?.targetKg ?? null)}
-      <div class="hint">Only used for the Targets board.</div></div>
-    <div class="field"><label class="toggle"><span class="k">Share my exact weight<small>Off = the squad sees your changes (kg & %), not your number. Someone determined could still work it out from those.</small></span><input type="checkbox" name="showWeight" ${p?.showWeight ? "checked" : ""}></label></div>
+      <div class="hint">Your conquest. Only used for the Conquest board.</div></div>
+    <div class="field"><label class="toggle"><span class="k">Share my exact weight<small>Off = the legion sees your changes (kg & %), not your number. Someone determined could still work it out from those.</small></span><input type="checkbox" name="showWeight" ${p?.showWeight ? "checked" : ""}></label></div>
     <div class="field"><label for="pf-pin">${isNew ? "4-digit PIN" : "New PIN"} <span class="faint">(optional)</span></label><input id="pf-pin" type="password" name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="${!isNew && p?.pinHash ? "Leave blank to keep" : "••••"}">
       <div class="hint">Stops anyone logging as you by mistake. It's a friendly lock, not bank security.</div></div>
     ${!isNew && p?.pinHash ? `<div class="field"><label class="toggle"><span class="k">Remove PIN</span><input type="checkbox" name="clearPin"></label></div>` : ""}
     <p class="err" id="pf-err"></p>
-    <div class="btn-row"><button class="btn primary" type="submit">${isNew ? "Join the squad" : "Save"}</button></div>
+    <div class="btn-row"><button class="btn primary" type="submit">${isNew ? "Enter the arena" : "Save"}</button></div>
   </form>`;
 }
 
@@ -1361,7 +1511,7 @@ async function readProfile(form, p, isNew) {
 }
 
 function openJoin() {
-  openSheet(`<h2>Join the squad</h2><p class="lead">Your starting weight is your baseline. Everyone's ranked on % lost, so size doesn't matter.</p>${profileForm(null, true)}`, body => {
+  openSheet(`<h2>Enlist</h2><p class="lead">Your first weigh-in is your block of marble. Everyone's ranked on % carved off, so size doesn't matter — only the work.</p>${profileForm(null, true)}`, body => {
     $("#pf", body).addEventListener("submit", async e => {
       e.preventDefault();
       const res = await readProfile(e.target, null, true); if (!res) return;
@@ -1369,14 +1519,14 @@ function openJoin() {
       if (!ok) return;
       await safe(store.saveWeighin({ id: `${res.player.id}_${today()}`, pid: res.player.id, date: today(), kg: res.startKg, ts: Date.now() }));
       meId = res.player.id; prefs.set(ME_KEY, meId); spectator = false;
-      closeSheet(); toast(`Welcome, ${res.player.name}. Belly must go. 🎾`); render();
+      closeSheet(); toast(`Welcome to the arena, ${res.player.name}. Strength and honour. ⚔️`); render();
     });
   }, { locked: true });
 }
 
 function openEditProfile() {
   const p = me(); if (!p) return;
-  openSheet(`<h2>Edit profile</h2><p class="lead">Changes show for everyone straight away.</p>${profileForm(p, false)}`, body => {
+  openSheet(`<h2>Edit profile</h2><p class="lead">Changes show for the whole legion straight away.</p>${profileForm(p, false)}`, body => {
     $("#pf", body).addEventListener("submit", async e => {
       e.preventDefault();
       const res = await readProfile(e.target, p, false); if (!res) return;
@@ -1387,23 +1537,23 @@ function openEditProfile() {
 
 function pickMe(id) {
   const p = player(id); if (!p) return;
-  const done = () => { meId = id; prefs.set(ME_KEY, id); spectator = false; closeSheet(); toast(`Hi ${p.name} 👋`); render(); };
+  const done = () => { meId = id; prefs.set(ME_KEY, id); spectator = false; closeSheet(); toast(`${p.name} enters the arena ⚔️`); render(); };
   if (!p.pinHash) return done();
-  openSheet(`<h2>${esc(p.emoji)} ${name(p)}</h2><p class="lead">Enter your PIN.</p>
+  openSheet(`<h2>${esc(p.emoji)} ${name(p)}</h2><p class="lead">Speak the password, warrior.</p>
     <form id="pinf"><div class="field"><input class="big" type="password" name="pin" inputmode="numeric" maxlength="4" autofocus></div><p class="err" id="pin-err"></p>
     <div class="btn-row"><button class="btn" type="button" data-act="who">Back</button><button class="btn primary" type="submit">Unlock</button></div></form>`, body => {
     $("#pinf", body).addEventListener("submit", async e => {
       e.preventDefault();
       if (await sha256(`${id}:${e.target.pin.value.trim()}`) === p.pinHash) done();
-      else { $("#pin-err").textContent = "Wrong PIN."; e.target.pin.value = ""; }
+      else { $("#pin-err").textContent = "Wrong PIN. Imposter."; e.target.pin.value = ""; }
     });
   }, { locked: true });
 }
 
 function openLogChooser() {
   if (!me()) { openWho(); return; }
-  openSheet(`<h2>Log it</h2><p class="lead">What are we adding?</p>
-    <div class="choice"><button data-act="log-weight"><span>⚖️</span>Weigh-in</button><button data-act="log-steps"><span>🥾</span>Steps</button></div>`);
+  openSheet(`<h2>To battle</h2><p class="lead">What are we carving into the record?</p>
+    <div class="choice"><button data-act="log-weight"><span>⚖️</span>Weigh-in</button><button data-act="log-steps"><span>🥾</span>March</button></div>`);
 }
 
 function openLogWeight(date = today()) {
@@ -1413,11 +1563,11 @@ function openLogWeight(date = today()) {
   const prefill = d => existing(d)?.kg ?? mine.filter(e => e.date < d).pop()?.kg ?? null;
   const formHtml = d => `<div class="field"><label for="lw-date">Date</label><input id="lw-date" type="date" name="date" value="${d}" max="${today()}"></div>
     <div class="field"><span class="lab">Weight</span><div id="lw-w">${weightInput("w", prefill(d))}</div>
-    <div class="hint">${existing(d) ? "You already logged this day — saving replaces it." : "Same time, same scales, ideally first thing."}</div></div>`;
-  openSheet(`<h2>⚖️ Weigh in</h2><p class="lead">Moment of truth.</p><form id="lw">${formHtml(date)}<p class="err" id="lw-err"></p>
-    <div class="btn-row"><button class="btn primary" type="submit">Save weigh-in</button></div></form>`, body => {
+    <div class="hint">${existing(d) ? "You already logged this day — saving replaces it." : "Same time, same scales — first thing, before you eat."}</div></div>`;
+  openSheet(`<h2>⚖️ Face the scales</h2><p class="lead">The scales do not lie.</p><form id="lw">${formHtml(date)}<p class="err" id="lw-err"></p>
+    <div class="btn-row"><button class="btn primary" type="submit">Carve it in stone</button></div></form>`, body => {
     const f = $("#lw", body);
-    f.date.addEventListener("change", () => { const d = f.date.value; if (d) { $("#lw-w").innerHTML = weightInput("w", prefill(d)); $("#lw .hint").textContent = existing(d) ? "You already logged this day — saving replaces it." : "Same time, same scales, ideally first thing."; } });
+    f.date.addEventListener("change", () => { const d = f.date.value; if (d) { $("#lw-w").innerHTML = weightInput("w", prefill(d)); $("#lw .hint").textContent = existing(d) ? "You already logged this day — saving replaces it." : "Same time, same scales — first thing, before you eat."; } });
     f.addEventListener("submit", async e => {
       e.preventDefault();
       const d = f.date.value, kg = readWeight(f, "w");
@@ -1425,7 +1575,7 @@ function openLogWeight(date = today()) {
       if (kg == null || kg < 30 || kg > 350) { $("#lw-err").textContent = "That weight doesn't look right."; return; }
       const prev = mine.filter(x => x.date < d).pop();
       const delta = prev ? kg - prev.kg : null;
-      const msg = delta == null ? "Weigh-in saved" : delta < -0.004 ? `${fmtDelta(delta)} since last time. Belly must go 🔥` : delta > 0.004 ? `${fmtDelta(delta)}… the lads will notice 🍩` : "Holding steady. Keep at it.";
+      const msg = delta == null ? "Carved in stone ⚔️" : delta < -0.004 ? `${fmtDelta(delta)} carved off. Strength and honour ⚔️` : delta > 0.004 ? `${fmtDelta(delta)}. Rocky got back up. So will you 🥊` : "Held the line. Keep pushing.";
       if (await safe(store.saveWeighin({ id: `${m.id}_${d}`, pid: m.id, date: d, kg, ts: Date.now() }), msg)) closeSheet();
     });
   });
@@ -1435,11 +1585,11 @@ function openLogSteps(date = today()) {
   const m = me(); if (!m) { openWho(); return; }
   const goal = state.group.stepGoal;
   const existing = d => state.steps.find(e => e.pid === m.id && e.date === d);
-  openSheet(`<h2>🥾 Log steps</h2><p class="lead">Goal is <b>${fmtInt(goal)}</b> a day. Copy the number from your phone or watch.</p>
+  openSheet(`<h2>🥾 Log the march</h2><p class="lead">The legion marches <b>${fmtInt(goal)}</b> steps a day. Copy the number from your phone or watch.</p>
     <form id="ls"><div class="field"><label for="ls-date">Date</label><input id="ls-date" type="date" name="date" value="${date}" max="${today()}"></div>
-    <div class="field"><label for="ls-n">Steps</label><input id="ls-n" class="big" type="number" inputmode="numeric" name="steps" min="0" max="150000" value="${existing(date)?.steps ?? ""}" placeholder="0">
+    <div class="field"><label for="ls-n">Steps marched</label><input id="ls-n" class="big" type="number" inputmode="numeric" name="steps" min="0" max="150000" value="${existing(date)?.steps ?? ""}" placeholder="0">
     <div class="hint" id="ls-hint">${existing(date) ? "Already logged — saving replaces it." : "Update it as the day goes on; the latest number wins."}</div></div>
-    <p class="err" id="ls-err"></p><div class="btn-row"><button class="btn primary" type="submit">Save steps</button></div></form>`, body => {
+    <p class="err" id="ls-err"></p><div class="btn-row"><button class="btn primary" type="submit">Log the march</button></div></form>`, body => {
     const f = $("#ls", body);
     f.date.addEventListener("change", () => { const ex = existing(f.date.value); f.steps.value = ex?.steps ?? ""; $("#ls-hint").textContent = ex ? "Already logged — saving replaces it." : "Update it as the day goes on; the latest number wins."; });
     f.addEventListener("submit", async e => {
@@ -1447,7 +1597,7 @@ function openLogSteps(date = today()) {
       const d = f.date.value, n = parseInt(f.steps.value, 10);
       if (!d || d > today()) { $("#ls-err").textContent = "Pick a date that isn't in the future."; return; }
       if (isNaN(n) || n < 0 || n > 150000) { $("#ls-err").textContent = "Enter a step count between 0 and 150,000."; return; }
-      const msg = n >= goal * 2 ? "Double the goal. Absolute machine 🔥" : n >= goal ? "Goal smashed ✅" : `${fmtInt(goal - n)} to go. Get walking 🚶`;
+      const msg = n >= goal * 2 ? "Double the march. Spartan 🔥" : n >= goal ? "The line holds. Goal hit 🛡️" : `${fmtInt(goal - n)} short. Keep marching 🥾`;
       if (await safe(store.saveSteps({ id: `${m.id}_${d}`, pid: m.id, date: d, steps: n, ts: Date.now() }), msg)) closeSheet();
     });
   });
@@ -1458,49 +1608,54 @@ function openPlayer(id) {
   if (id === meId) { go("me"); return; }
   const C = compute(), x = C.stats[id];
   const seeW = canSeeWeight(p);
-  openSheet(`<div class="me-top">${av(p, "lg")}<div style="flex:1;min-width:0"><h2>${name(p)}</h2><div class="me-sub">#${C.ranks.overall[id]} overall · ${x.points} Belly Points</div></div></div>
+  const t = tierOf(x.chgPct);
+  openSheet(`<div class="me-top"><div class="me-statue">${torsoSVG(t.i, { variant: C.ranks.overall[id] === 1 ? "gold" : "plaster", cracked: !!(x.week && x.week.pct > 0), uid: "ps" })}</div>
+    <div style="flex:1;min-width:0"><h2>${esc(p.emoji)} ${name(p)}</h2><div style="margin:4px 0 3px"><span class="tier t${t.i}">${esc(t.name)}</span></div>
+    <div class="me-sub">Rank ${roman(C.ranks.overall[id])} · ${x.points} glory</div></div></div>
     <div class="stat-grid">
       <div class="stat"><b class="num ${tone(x.chgPct)}">${fmtPct(x.chgPct)}</b><span>Body %</span></div>
       <div class="stat"><b class="num ${tone(x.chgKg)}">${fmtDelta(x.chgKg)}</b><span>Change</span></div>
-      <div class="stat"><b class="num ${tone(x.week?.pct)}">${fmtPct(x.week?.pct)}</b><span>This week</span></div>
+      <div class="stat"><b class="num ${tone(x.week?.pct)}">${fmtPct(x.week?.pct)}</b><span>This battle</span></div>
       <div class="stat"><b class="num">${seeW ? fmtWeight(x.curKg) : "🔒"}</b><span>Current</span></div>
-      <div class="stat"><b class="num">${x.goalStreak} 🔥</b><span>Step streak</span></div>
-      <div class="stat"><b class="num">${fmtInt(x.stepsAvg)}</b><span>Avg steps</span></div>
+      <div class="stat"><b class="num">${x.goalStreak} 🔥</b><span>Montage</span></div>
+      <div class="stat"><b class="num">${fmtInt(x.stepsAvg)}</b><span>Avg march</span></div>
     </div>
     <div class="chart" id="chartPlayer" data-pid="${esc(id)}" style="margin-top:14px"></div>
-    <div class="btn-row">${meId ? `<button class="btn" data-act="compare-go" data-id="${esc(id)}">Compare with me</button>` : ""}<button class="btn" data-act="close">Close</button></div>
+    <div class="btn-row">${meId ? `<button class="btn" data-act="compare-go" data-id="${esc(id)}">⚔️ Face off</button>` : ""}<button class="btn" data-act="close">Close</button></div>
     <div style="margin-top:14px">${historyCard(id, false)}</div>`, () => mountCharts(C));
 }
 
 function openGroupSettings() {
   const g = state.group;
-  openSheet(`<h2>Season & step goal</h2><p class="lead">These apply to the whole squad — agree it in the group chat first.</p>
+  openSheet(`<h2>Campaign & march goal</h2><p class="lead">These bind the whole legion — agree it in the group chat first.</p>
     <form id="gs"><div class="field"><label for="gs-name">Group name</label><input id="gs-name" type="text" name="name" maxlength="30" value="${esc(g.name)}"></div>
-    <div class="field"><label for="gs-goal">Daily step goal</label><input id="gs-goal" type="number" inputmode="numeric" name="goal" min="1000" max="50000" step="500" value="${g.stepGoal}"></div>
-    <div class="field"><label for="gs-start">Season start date</label><input id="gs-start" type="date" name="start" value="${g.startDate}">
-      <div class="hint">Only weigh-ins and steps from this date count. Everyone's baseline is their first weigh-in on or after it. Move it forward to start a fresh season — old entries are kept.</div></div>
+    <div class="field"><label for="gs-goal">Daily march goal (steps)</label><input id="gs-goal" type="number" inputmode="numeric" name="goal" min="1000" max="50000" step="500" value="${g.stepGoal}"></div>
+    <div class="field"><label for="gs-start">Campaign start date</label><input id="gs-start" type="date" name="start" value="${g.startDate}">
+      <div class="hint">Only weigh-ins and steps from this date count. Everyone's baseline is their first weigh-in on or after it. Move it forward to start a fresh campaign — old entries are kept.</div></div>
     <p class="err" id="gs-err"></p><div class="btn-row"><button class="btn primary" type="submit">Save for everyone</button></div></form>`, body => {
     $("#gs", body).addEventListener("submit", async e => {
       e.preventDefault();
       const f = e.target, goal = parseInt(f.goal.value, 10);
       if (isNaN(goal) || goal < 1000 || goal > 50000) { $("#gs-err").textContent = "Step goal must be 1,000–50,000."; return; }
       if (!f.start.value) { $("#gs-err").textContent = "Pick a start date."; return; }
-      if (await safe(store.saveGroup({ name: f.name.value.trim() || "Belly Must Go", stepGoal: goal, startDate: f.start.value }), "Saved for the squad")) closeSheet();
+      if (await safe(store.saveGroup({ name: f.name.value.trim() || "Belly Must Go", stepGoal: goal, startDate: f.start.value }), "Decreed for the legion")) closeSheet();
     });
   });
 }
 
 function openPointsInfo() {
-  openSheet(`<h2>How Belly Points work</h2><p class="lead">Rewards losing weight <i>and</i> turning up. Weight is scored on % of your own start weight, so a 70kg and a 130kg player compete on level terms.</p>
+  openSheet(`<h2>The laws of glory</h2><p class="lead">Glory rewards carving weight <i>and</i> turning up. Weight is scored as a % of your own starting weight, so a 70kg and a 130kg warrior fight on level ground.</p>
     <ul class="rules">
-      <li><span>Every 1% of body weight lost</span><b>+${POINTS.perPct}</b></li>
+      <li><span>Every 1% of body weight carved off</span><b>+${POINTS.perPct}</b></li>
       <li><span>Every 1% gained back</span><b style="color:var(--bad)">−${POINTS.perPct}</b></li>
-      <li><span>Each day you hit the step goal</span><b>+${POINTS.perGoalDay}</b></li>
-      <li><span>Each week you weigh in at least once</span><b>+${POINTS.perWeighWeek}</b></li>
-      <li><span>Biggest Loser of the week (largest % drop)</span><b>+${POINTS.perWeeklyWin}</b></li>
+      <li><span>Each day you hit the march goal</span><b>+${POINTS.perGoalDay}</b></li>
+      <li><span>Each battle (week) you face the scales</span><b>+${POINTS.perWeighWeek}</b></li>
+      <li><span>Champion of the battle (biggest % drop)</span><b>+${POINTS.perWeeklyWin}</b></li>
     </ul>
-    <p class="faint" style="font-size:.82rem;margin-top:14px">Weeks run Monday–Sunday. A week's change is your last weigh-in that week against your last weigh-in before it. Arrows on the boards show movement versus 7 days ago.</p>
-    <div class="btn-row"><button class="btn" data-act="close">Got it</button></div>`);
+    <div class="card-h" style="margin:18px 0 8px"><h2>Warrior ranks</h2><span class="meta">% of body weight lost</span></div>
+    <div class="tiers">${TIERS.map(([n, at], i) => `<div>${torsoSVG(i, { uid: "tl" + i })}<b>${n}</b>${i === 0 ? "Start" : at + "%+"}</div>`).join("")}</div>
+    <p class="faint" style="font-size:.82rem;margin-top:14px">Battles run Monday–Sunday. A battle's change is your last weigh-in that week against your last weigh-in before it. The biggest drop is crowned Champion 🌿; the biggest gain gets the thumbs down 👎 and a cracked statue. Arrows on the ranks show movement versus 7 days ago.</p>
+    <div class="btn-row"><button class="btn" data-act="close">Strength and honour</button></div>`);
 }
 
 /* ---------------------------------------------------------------------
@@ -1539,7 +1694,7 @@ document.addEventListener("click", async e => {
     case "edit-steps": openLogSteps(t.dataset.date); break;
     case "del-weigh": if (confirm("Delete this weigh-in?")) safe(store.deleteWeighin(id), "Weigh-in deleted"); break;
     case "del-steps": if (confirm("Delete this step entry?")) safe(store.deleteSteps(id), "Steps deleted"); break;
-    case "reset-demo": if (!LIVE && confirm("Reset the demo back to the sample crew?")) { prefs.del(ME_KEY); meId = null; spectator = false; store.reset(); } break;
+    case "reset-demo": if (!LIVE && confirm("Reset the training grounds back to the sample legion?")) { prefs.del(ME_KEY); meId = null; spectator = false; store.reset(); } break;
   }
 });
 
