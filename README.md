@@ -1,12 +1,14 @@
-# Belly Must Go ⚔️
+# Belly Must Go
 
-The arena for the padel legion. Warriors log their own weigh-ins and daily marches
-(steps), and the app ranks everyone from every angle.
+The arena for the padel group. Everyone logs their own weigh-ins and daily steps, and the app ranks everyone from every angle.
 
-**The look:** Physical: 100's plaster torsos on marble plinths, the bronze and crimson
-of *300* and *Troy*, *Gladiator*'s arena and gold, and Rocky's grit. The palette is stone,
-bronze, crimson and plaster. Titles are set in Roman capitals (Cinzel) and numbers in
-heavy condensed type (Anton).
+**The look:** quiet and grown-up. Near-black stone, ivory and one muted bronze; Cormorant Garamond
+for headings and figures, Inter for everything else; engraved initials instead of avatars. The
+drama comes from the Physical: 100-style plaster torsos and a daily line from Gladiator, 300,
+Rocky or the Stoics, not from decoration.
+
+Add `?demo` to the URL (e.g. `https://bmg.sgj.luxe/?demo`) to preview with sample players
+without touching the live data.
 
 ### The Pantheon and warrior ranks
 
@@ -21,40 +23,40 @@ Every warrior has a plaster torso on a plinth. It **carves itself** as they lose
 | Champion | 8%+ | six-pack, obliques |
 | Immortal | 12%+ | eight-pack, V-lines |
 
-The leader's torso is cast in **gold**. Anyone who gained weight this battle gets a
+The leader's torso is cast in **gold**. Anyone who gained weight this week gets a
 **cracked** statue, a nod to Physical: 100 smashing the losers' casts.
 
 ### Ranks (leaderboards)
 
 | Board | What it ranks |
 |---|---|
-| 🏛️ **Glory** | Overall points, with ▲▼ movement versus 7 days ago |
-| ⚖️ **Body %** | % of your own start weight lost, so different sizes fight fairly |
-| 🪓 **Weight shed** | Raw kg / lb (the heavyweights' board) |
-| ⚔️ **This battle** | This week's change, plus the Hall of Champions for past battles |
-| 🥾 **The march** | Steps today, this week, or daily average against the shared goal |
-| 🥊 **Montage** | Days in a row hitting the step goal, and weeks in a row on the scales (*Shield wall*) |
-| 🎯 **Conquest** | Progress towards each warrior's own target weight |
+| **Standings** | Glory points, with ▲▼ movement versus 7 days ago |
+| **Body %** | % of your own start weight lost, so different sizes fight fairly |
+| **Weight lost** | Raw kg / lb |
+| **This week** | This week's change, plus Honours for past weeks |
+| **Steps** | Steps today, this week, or daily average against the shared goal |
+| **Streaks** | Days in a row hitting the step goal, and weeks in a row on the scales |
+| **Targets** | Progress towards each person's own target weight |
 
 The Arena (home) screen shows:
-- a daily line from Gladiator, 300, Troy or Rocky
+- a daily line from Gladiator, 300, Rocky or the Stoics
 - how much the legion has lost in total
 - your torso, rank and the % left to carve before your next rank
 - the gap to the warrior above you
 - the Pantheon
-- last battle's **Champion 🌿** and **Thumbs down 👎**
-- today's march
-- **Deserters 👀**: 7+ days without a weigh-in
-- the battle chronicle
+- last week's **Champion** and who **lost ground**
+- today's steps
+- **Absent from the scales**: 7+ days without a weigh-in
+- the chronicle
 
 ### Glory
 
 | | |
 |---|---|
-| Every 1% of body weight carved off (or gained back) | ±10 |
-| Each day the march goal is hit | +1 |
-| Each battle (Mon–Sun week) with at least one weigh-in | +3 |
-| Champion of the battle (largest % drop) | +5 |
+| Every 1% of body weight lost (or gained back) | ±10 |
+| Each day the step goal is hit | +1 |
+| Each week (Mon–Sun) with at least one weigh-in | +3 |
+| Champion of the week (largest % drop) | +5 |
 
 To change the values, edit `POINTS` near the top of the script in `index.html`. The rank
 thresholds are in `TIERS` and the daily lines in `QUOTES`.
@@ -73,7 +75,7 @@ honour-system lock, not real security.
 
 It's one static `index.html` with no build step.
 
-**Training grounds (demo mode)** works straight away. With no Firebase config the app loads a sample legion
+**Demo mode** works straight away. With no Firebase config (or with `?demo`) the app loads sample players
 and saves to the browser only. Open `index.html` via any static server
 (`python3 -m http.server`) or the hosted URL.
 
@@ -90,7 +92,7 @@ and saves to the browser only. Open `index.html` via any static server
 8. Share the link in the group chat. On iPhone: Share → **Add to Home Screen**.
 
 Once live, the app creates the group with a 10,000-step goal and a campaign starting today.
-Anyone can change either under **Warrior → Campaign & march goal**.
+Anyone can change either under **Profile → Campaign & step goal**.
 
 ### Campaigns
 
