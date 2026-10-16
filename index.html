@@ -404,7 +404,14 @@
   .field{ margin-bottom: 14px; }
   .field > label, .field > .lab{ display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-dim); margin-bottom: 6px; }
   .field .hint{ font-size: 0.74rem; color: var(--text-faint); margin-top: 5px; }
-  input[type=text], input[type=number], input[type=date], input[type=password], input[type=tel]{
+  select{ appearance: none; -webkit-appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--text-faint) 50%), linear-gradient(135deg, var(--text-faint) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 32px !important; }
+  .cu-list{ max-height: 46vh; overflow-y: auto; margin: 0 -4px; padding: 0 4px; }
+  .cu-row{ display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 8px; align-items: center; padding: 4px 0; }
+  .cu-row span{ font-size: 0.84rem; color: var(--text-dim); }
+  .cu-head span{ font-size: 0.72rem; color: var(--text-faint); }
+  .cu-row input{ min-height: 40px !important; padding: 6px 10px !important; text-align: right; }
+  input.bad-in{ border-color: var(--bad) !important; box-shadow: 0 0 0 3px var(--bad-dim) !important; }
+  select, input[type=text], input[type=number], input[type=date], input[type=password], input[type=tel]{
     width: 100%; min-height: 48px; padding: 10px 14px; border-radius: 10px;
     background: var(--surface-2); border: 1px solid var(--border-strong); color: var(--text);
     font: inherit; font-size: 16px; outline: none;
@@ -617,6 +624,12 @@ const ME_KEY = LIVE ? "me.live" : "me.demo";
 let unit = prefs.get("unit", "kg");          // "kg" | "st" | "lb"
 let meId = prefs.get(ME_KEY, null);
 let spectator = false;
+// Group admin tools: unlock on a device by opening the app once with ?admin (honour system).
+let adminMode = prefs.get("admin", false);
+{
+  const a = new URLSearchParams(location.search).get("admin");
+  if (a !== null) { adminMode = a !== "off"; prefs.set("admin", adminMode); }
+}
 
 async function sha256(text) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
@@ -1288,6 +1301,15 @@ function renderMe(C) {
   } else {
     html += renderMyCard(C);
   }
+  if (adminMode) {
+    html += `<section class="card"><div class="card-h"><h2>Manage the group</h2><span class="meta">Admin on this device</span></div><div class="set">
+      <button class="set-row" data-act="group-settings"><span class="k">Campaign start & step goal<small>Only entries from the start date count</small></span><span class="v">${esc(fmtDate(state.group.startDate))} ›</span></button>
+      <button class="set-row" data-act="admin-add"><span class="k">Add a player<small>For people who haven't joined yet</small></span><span class="v">›</span></button>
+      <button class="set-row" data-act="admin-catchup"><span class="k">Catch up entries<small>Fill in steps and weigh-ins, day by day</small></span><span class="v">›</span></button>
+      ${state.players.length ? `<div style="padding:8px 0 4px"><div class="eyebrow" style="margin-bottom:8px">Players</div><div class="dodgers">${[...state.players].sort((a, b) => a.name.localeCompare(b.name)).map(pl => `<button class="dodger" data-act="admin-player" data-id="${esc(pl.id)}">${av(pl)}${name(pl)}</button>`).join("")}</div></div>` : ""}
+      <button class="set-row" data-act="admin-off"><span class="k">Hide admin tools on this device</span><span class="v">›</span></button>
+    </div></section>`;
+  }
   html += `<section class="card"><div class="card-h"><h2>Settings</h2></div><div class="set">
     <div class="set-row" style="cursor:default"><span class="k">Units<small>Just for this device</small></span>
       <div class="seg">${[["kg", "kg"], ["st", "st & lb"], ["lb", "lb"]].map(([k, l]) => `<button class="${unit === k ? "on" : ""}" data-act="unit" data-unit="${k}">${l}</button>`).join("")}</div></div>
@@ -1567,9 +1589,9 @@ function openJoin() {
   }, { locked: true });
 }
 
-function openEditProfile() {
-  const p = me(); if (!p) return;
-  openSheet(`<h2>Edit profile</h2><p class="lead">Changes show for everyone straight away.</p>${profileForm(p, false)}`, body => {
+function openEditProfile(pid = meId) {
+  const p = player(pid); if (!p) return;
+  openSheet(`<h2>${pid === meId ? "Edit profile" : `Edit ${name(p)}`}</h2><p class="lead">Changes show for everyone straight away.${pid !== meId && p.pinHash ? " Tick “Remove PIN” if they've forgotten it." : ""}</p>${profileForm(p, false)}`, body => {
     $("#pf", body).addEventListener("submit", async e => {
       e.preventDefault();
       const res = await readProfile(e.target, p, false); if (!res) return;
@@ -1624,6 +1646,111 @@ function openLogWeight(date = today()) {
   });
 }
 
+/* ---------- Admin: add players, catch up entries ---------- */
+function openAdminAdd() {
+  const start = state.group.startDate;
+  openSheet(`<h2>Add a player</h2><p class="lead">They can pick their name on their own phone afterwards and set a PIN.</p>
+    <form id="aa" autocomplete="off">
+      <div class="field"><label for="aa-name">Name</label><input id="aa-name" type="text" name="name" maxlength="20" required placeholder="What the group calls them"></div>
+      <div class="field"><span class="lab">First weigh-in <span class="faint">(optional)</span></span>${weightInput("w", null)}
+        <input type="date" name="date" value="${start}" max="${today()}" style="margin-top:8px"><div class="hint">Their baseline. Use the campaign start date if you have it.</div></div>
+      <div class="field"><span class="lab">Target weight <span class="faint">(optional)</span></span>${weightInput("target", null)}</div>
+      <div class="field"><label class="toggle"><span class="k">Share their exact weight<small>Off: others see changes only. They can change this later.</small></span><input type="checkbox" name="showWeight"></label></div>
+      <p class="err" id="aa-err"></p>
+      <div class="btn-row"><button class="btn primary" type="submit">Add player</button></div>
+    </form>`, body => {
+    $("#aa", body).addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = e.target, err = $("#aa-err"), nm = f.name.value.trim();
+      if (!nm) { err.textContent = "Need a name."; return; }
+      if (state.players.some(o => o.name.toLowerCase() === nm.toLowerCase())) { err.textContent = "Someone already has that name."; return; }
+      const kg = readWeight(f, "w"), targetKg = readWeight(f, "target"), d = f.date.value || today();
+      if (kg != null && (kg < 30 || kg > 350)) { err.textContent = "That weight doesn't look right."; return; }
+      if (targetKg != null && (targetKg < 30 || targetKg > 350)) { err.textContent = "That target doesn't look right."; return; }
+      if (d > today()) { err.textContent = "The weigh-in date can't be in the future."; return; }
+      const id = (nm.toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 12) || "p") + "-" + uid().slice(0, 5);
+      const created = kg != null && d < today() ? d : today();
+      if (!await safe(store.savePlayer({ id, name: nm, emoji: "⚔️", targetKg, showWeight: f.showWeight.checked, pinHash: null, created, ts: Date.now() }))) return;
+      if (kg != null) await safe(store.saveWeighin({ id: `${id}_${d}`, pid: id, date: d, kg, ts: Date.now() }));
+      toast(`${nm} added`);
+      openCatchup(id);
+    });
+  });
+}
+
+const wText = kg => {
+  if (kg == null) return "";
+  if (unit === "kg") return String(round(kg, 1));
+  const lb = kg / KG_PER_LB;
+  if (unit === "lb") return String(round(lb, 1));
+  let st = Math.floor(lb / 14), r = round(lb - st * 14, 1);
+  if (r >= 14) { st++; r = round(r - 14, 1); }
+  return `${st} ${r}`;
+};
+const wParse = txt => {
+  const n = (String(txt).match(/\d+(?:\.\d+)?/g) || []).map(Number);
+  if (!n.length) return null;
+  if (unit === "kg") return round(n[0], 2);
+  if (unit === "lb") return round(n[0] * KG_PER_LB, 2);
+  return round((n[0] * 14 + (n[1] || 0)) * KG_PER_LB, 2);
+};
+
+function openCatchup(pid, from) {
+  const ps = [...state.players].sort((a, b) => a.name.localeCompare(b.name));
+  if (!ps.length) { toast("Add a player first"); return; }
+  pid = player(pid) ? pid : (meId && player(meId) ? meId : ps[0].id);
+  from = from || state.group.startDate;
+  if (from > today()) from = today();
+  const days = [];
+  for (let d = today(); d >= from && days.length < 120; d = addDays(d, -1)) days.push(d);
+  const stepOf = new Map(state.steps.filter(e => e.pid === pid).map(e => [e.date, e]));
+  const wOf = new Map(state.weighins.filter(e => e.pid === pid).map(e => [e.date, e]));
+  const unitLbl = unit === "st" ? "st lb" : unit;
+  openSheet(`<h2>Catch up</h2><p class="lead">Type what's missing. Blank boxes are skipped; clearing a filled box removes that entry.</p>
+    <div class="two"><div class="field" style="flex:1.4"><label for="cu-p">Player</label><select id="cu-p">${ps.map(p => `<option value="${esc(p.id)}" ${p.id === pid ? "selected" : ""}>${name(p)}</option>`).join("")}</select></div>
+      <div class="field" style="flex:1"><label for="cu-from">From</label><input id="cu-from" type="date" value="${from}" max="${today()}"></div></div>
+    <div class="cu-row cu-head"><span>Day</span><span>Steps</span><span>Weight (${unitLbl})</span></div>
+    <form id="cu"><div class="cu-list">${days.map(d => {
+      const sv = stepOf.get(d)?.steps ?? "", wv = wText(wOf.get(d)?.kg);
+      return `<div class="cu-row" data-date="${d}"><span>${esc(parse(d).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }))}</span>
+        <input type="text" inputmode="numeric" name="s_${d}" value="${sv}" data-orig="${sv}" placeholder="–">
+        <input type="text" inputmode="decimal" name="w_${d}" value="${esc(wv)}" data-orig="${esc(wv)}" placeholder="–"></div>`;
+    }).join("")}</div>
+    ${days.length >= 120 ? `<p class="hint">Showing the most recent 120 days. Move “From” forward to see earlier ones.</p>` : ""}
+    <p class="err" id="cu-err"></p>
+    <div class="btn-row"><button class="btn primary" type="submit" id="cu-save">Save changes</button></div></form>
+    <div class="btn-row"><button class="btn" data-act="admin-edit" data-id="${esc(pid)}">Edit ${name(player(pid))}'s details</button></div>`, body => {
+    $("#cu-p", body).addEventListener("change", e => openCatchup(e.target.value, $("#cu-from", body).value));
+    $("#cu-from", body).addEventListener("change", e => e.target.value && openCatchup($("#cu-p", body).value, e.target.value));
+    const f = $("#cu", body), btn = $("#cu-save", body);
+    const pending = () => [...f.querySelectorAll("input")].filter(i => i.value.trim() !== i.dataset.orig);
+    f.addEventListener("input", () => { const n = pending().length; btn.textContent = n ? `Save ${n} change${n === 1 ? "" : "s"}` : "Save changes"; });
+    f.addEventListener("submit", async e => {
+      e.preventDefault();
+      const err = $("#cu-err"); err.textContent = "";
+      f.querySelectorAll(".bad-in").forEach(i => i.classList.remove("bad-in"));
+      const ops = [], bad = [];
+      for (const i of pending()) {
+        const d = i.name.slice(2), v = i.value.trim(), isSteps = i.name[0] === "s";
+        const id = `${pid}_${d}`;
+        if (!v) { ops.push(isSteps ? store.deleteSteps(id) : store.deleteWeighin(id)); continue; }
+        if (isSteps) {
+          const n = parseInt(v.replace(/[,\s]/g, ""), 10);
+          if (isNaN(n) || n < 0 || n > 150000) { bad.push(i); continue; }
+          ops.push(store.saveSteps({ id, pid, date: d, steps: n, ts: Date.now() }));
+        } else {
+          const kg = wParse(v);
+          if (kg == null || kg < 30 || kg > 350) { bad.push(i); continue; }
+          ops.push(store.saveWeighin({ id, pid, date: d, kg, ts: Date.now() }));
+        }
+      }
+      if (bad.length) { bad.forEach(i => i.classList.add("bad-in")); err.textContent = `${bad.length} box${bad.length === 1 ? " doesn't" : "es don't"} look right (marked red). Nothing saved.`; return; }
+      if (!ops.length) { toast("Nothing to save"); return; }
+      if (await safe(Promise.all(ops), `Saved ${ops.length} change${ops.length === 1 ? "" : "s"} for ${player(pid).name}`)) openCatchup(pid, $("#cu-from", body).value);
+    });
+  });
+}
+
 function openLogTraining() {
   const m = me(); if (!m) { openWho(); return; }
   openSheet(`<h2>Log training</h2><p class="lead">What did you do? Keep it short.</p>
@@ -1673,7 +1800,7 @@ function openLogSteps(date = today()) {
 
 function openPlayer(id) {
   const p = player(id); if (!p) return;
-  if (id === meId) { go("me"); return; }
+  if (id === meId && !adminMode) { go("me"); return; }
   const C = compute(), x = C.stats[id];
   const seeW = canSeeWeight(p);
   const t = tierOf(x.chgPct);
@@ -1690,6 +1817,7 @@ function openPlayer(id) {
     </div>
     <div class="chart" id="chartPlayer" data-pid="${esc(id)}" style="margin-top:14px"></div>
     <p class="faint" style="font-size:.82rem;margin:12px 0 0">${x.trainWeek} training session${x.trainWeek === 1 ? "" : "s"} this week · ${x.trainTotal} this campaign</p>
+    ${adminMode ? `<div class="btn-row"><button class="btn" data-act="admin-catchup" data-id="${esc(id)}">Catch up entries</button><button class="btn" data-act="admin-edit" data-id="${esc(id)}">Edit details</button></div>` : ""}
     <div class="btn-row">${meId ? `<button class="btn" data-act="compare-go" data-id="${esc(id)}">Compare with me</button>` : ""}<button class="btn" data-act="close">Close</button></div>
     <div style="margin-top:14px">${historyCard(id, false)}</div>`, () => mountCharts(C));
 }
@@ -1756,6 +1884,11 @@ document.addEventListener("click", async e => {
     case "join": openJoin(); break;
     case "spectate": spectator = true; closeSheet(); render(); break;
     case "edit-profile": openEditProfile(); break;
+    case "admin-add": openAdminAdd(); break;
+    case "admin-catchup": openCatchup(id); break;
+    case "admin-edit": openEditProfile(id); break;
+    case "admin-player": openPlayer(id); break;
+    case "admin-off": adminMode = false; prefs.set("admin", false); render(); toast("Admin tools hidden. Open the app with ?admin to bring them back."); break;
     case "group-settings": openGroupSettings(); break;
     case "points-info": openPointsInfo(); break;
     case "close": closeSheet(); break;

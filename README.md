@@ -95,6 +95,20 @@ and saves to the browser only. Open `index.html` via any static server
 Once live, the app creates the group with a 10,000-step goal and a campaign starting today.
 Anyone can change either under **Profile → Campaign & step goal**.
 
+### Admin tools
+
+Open `https://bmg.sgj.luxe/?admin` once on your phone to unlock **Profile → Manage the group** on that
+device (`?admin=off`, or the row at the bottom of that section, hides it again). From there:
+
+- **Campaign start & step goal**
+- **Add a player** for someone who hasn't joined, with an optional back-dated first weigh-in
+- **Catch up entries**: a day-by-day grid of steps and weight for any player, prefilled with what's
+  already logged. Blank boxes are skipped, clearing a box deletes that entry, and nothing saves if
+  any box looks wrong. Weight uses the device's units (`st lb` as two numbers, e.g. `14 2.5`).
+- Tap any player to **edit their details**, including removing a forgotten PIN
+
+It's an honour-system unlock, like the PINs: anyone who knows the link could use it.
+
 ### Campaigns
 
 Only entries on or after the campaign start date count, and each person's baseline is
