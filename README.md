@@ -85,7 +85,8 @@ and saves to the browser only. Open `index.html` via any static server
 1. Create a project at <https://console.firebase.google.com> (Analytics not needed).
 2. **Build → Firestore Database → Create database** (production mode, `europe-west2` London).
 3. **Build → Authentication → Get started → Sign-in method → Anonymous → Enable.**
-4. **Firestore → Rules:** paste the contents of `firestore.rules` and publish.
+4. **Firestore → Rules:** paste the contents of `firestore.rules` and publish. The project is shared with
+   the North vs South Cup, so that file covers both apps: always publish the whole file.
 5. **Project settings → Your apps → Web (`</>`)**: register an app and copy the `firebaseConfig` object.
 6. Paste it into `FIREBASE_CONFIG` at the top of the script in `index.html`, then commit.
 7. Host it on **Vercel** (same as the other apps): import the repo with no framework preset and no build;

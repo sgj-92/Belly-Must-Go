@@ -1,14 +1,22 @@
 rules_version = '2';
 
-// Belly Must Go — Firestore security rules.
+// Shared Firebase project: it also hosts the North vs South Cup, so these rules
+// cover BOTH apps. When publishing, always paste this whole file — never a
+// Belly-Must-Go-only version, or the Cup pages stop loading.
 //
-// Everyone signs in anonymously (handled by the app). These rules keep out
-// anyone who isn't using the app, block deletes of players and the group,
-// and reject malformed or silly values. They do NOT stop one squad member
-// from editing another's entries — the app's PIN is an honour-system lock.
+// Belly Must Go: everyone signs in anonymously (handled by the app). Its rules
+// keep out anyone not using the app, block deletes of players and the group, and
+// reject malformed or silly values. They do NOT stop one member from editing
+// another's entries — the app's PIN is an honour-system lock.
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ---- North vs South Cup (no sign-in) ----
+    match /fixtures/{id}        { allow read, write: if true; }
+    match /round2_fixtures/{id} { allow read, write: if true; }
+    match /meta/{id}            { allow read, write: if true; }
+
+    // ---- Belly Must Go ----
     function signedIn() { return request.auth != null; }
     function isDate(d) { return d is string && d.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); }
     function optNum(v, lo, hi) { return v == null || ((v is int || v is float) && v >= lo && v <= hi); }
