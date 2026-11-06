@@ -1,70 +1,54 @@
 # Belly Must Go
 
-The arena for the padel group. Everyone logs their own weigh-ins and daily steps, and the app ranks everyone from every angle.
+Weigh-ins, steps and standings for the padel group. Everyone logs their own weight, steps and
+training; the app keeps a quiet, well-made record of who is doing what.
 
-**The look:** quiet and grown-up. Near-black stone, ivory and one muted bronze; Cormorant Garamond
-for headings and figures, Inter for everything else; engraved initials instead of avatars. The
-drama comes from the Physical: 100-style plaster torsos and a daily line from Gladiator, 300,
-Rocky or the Stoics, not from decoration.
+**The look:** quiet luxury, like a members' club or a fine watch brand. Ivory paper and ink, one
+racing-green accent and a champagne-gold hairline; Bodoni Moda for headings and figures, Jost for
+everything else; engraved initials instead of avatars. It follows the phone's light / dark setting.
 
 Add `?demo` to the URL (e.g. `https://bmg.sgj.luxe/?demo`) to preview with sample players
 without touching the live data.
 
-### The Pantheon and warrior ranks
+### Today
 
-Every warrior has a plaster torso on a plinth. It **carves itself** as they lose weight:
+- the date, a greeting and a line from Chanel, Franklin, the Stoics and others
+- the group at a glance: weight lost together, steps today, how many are at goal
+- **Your season**: % of starting weight lost, position, a milestone line
+  (2.5% · 5% · 7.5% · 10% · 12.5% · 15% · 20%), score, this week, steps today, and the gap to the
+  person above you on body weight lost
+- **The table**: the top five, plus you if you're further down
+- **Week in review**: best week and most gained for the last full week
+- today's steps, anyone **awaiting a weigh-in** (7+ days), and the **journal** of recent entries
 
-| Rank | % body weight lost | Torso |
-|---|---|---|
-| Recruit | start | soft belly |
-| Hoplite | 1%+ | chest appears |
-| Gladiator | 3%+ | first abs |
-| Spartan | 5%+ | four-pack |
-| Champion | 8%+ | six-pack, obliques |
-| Immortal | 12%+ | eight-pack, V-lines |
-
-The leader's torso is cast in **gold**. Anyone who gained weight this week gets a
-**cracked** statue, a nod to Physical: 100 smashing the losers' casts.
-
-### Ranks (leaderboards)
+### Standings
 
 | Board | What it ranks |
 |---|---|
-| **Standings** | Glory points, with ▲▼ movement versus 7 days ago |
-| **Body %** | % of your own start weight lost, so different sizes fight fairly |
+| **Standings** | Score, with ▲▼ movement versus 7 days ago |
+| **Body %** | % of your own start weight lost, so different sizes compete fairly |
 | **Weight lost** | Raw kg / lb |
-| **This week** | This week's change, plus Honours for past weeks |
+| **This week** | This week's change, plus each past week's best and most gained |
 | **Steps** | Steps today, this week, or daily average against the shared goal |
-| **Training** | Sessions logged this week and this campaign (gym, run, padel… typed freely) |
+| **Training** | Sessions logged this week and this season (gym, run, padel… typed freely) |
 | **Streaks** | Days in a row hitting the step goal, and weeks in a row on the scales |
 | **Targets** | Progress towards each person's own target weight |
 
-The Arena (home) screen shows:
-- a daily line from Gladiator, 300, Rocky or the Stoics
-- how much the legion has lost in total
-- your torso, rank and the % left to carve before your next rank
-- the gap to the warrior above you
-- the Pantheon
-- last week's **Champion** and who **lost ground**
-- today's steps
-- **Absent from the scales**: 7+ days without a weigh-in
-- the chronicle
-
-### Glory
+### Score
 
 | | |
 |---|---|
 | Every 1% of body weight lost (or gained back) | ±10 |
-| Each day the step goal is hit | +1 |
+| Each day the step goal is met | +1 |
 | Each week (Mon–Sun) with at least one weigh-in | +3 |
-| Champion of the week (largest % drop) | +5 |
+| Best week (largest % drop) | +5 |
 
-To change the values, edit `POINTS` near the top of the script in `index.html`. The rank
-thresholds are in `TIERS` and the daily lines in `QUOTES`.
+To change the values, edit `POINTS` near the top of the script in `index.html`. Milestones are
+in `MILESTONES` and the daily lines in `QUOTES`.
 
 ### Privacy
 
-Each player picks whether to share their exact weight. When it's off, the squad sees
+Each player picks whether to share their exact weight. When it's off, others see
 only changes (kg and %). Anyone determined could still work out the number from
 those two, and the app says so when you set it.
 An optional 4-digit PIN stops people logging as each other by accident. It's an
@@ -93,17 +77,17 @@ and saves to the browser only. Open `index.html` via any static server
    `vercel.json` serves the root folder. Production is `https://bmg.sgj.luxe`.
 8. Share the link in the group chat. On iPhone: Share → **Add to Home Screen**.
 
-Once live, the app creates the group with a 10,000-step goal and a campaign starting today.
-Anyone can change either under **Profile → Campaign & step goal**.
+Once live, the app creates the group with a 10,000-step goal and a season starting today.
+Anyone can change either under **Profile → Season & step goal**.
 
 ### Admin tools
 
 Open `https://bmg.sgj.luxe/?admin` once on your phone to unlock **Profile → Manage the group** on that
 device (`?admin=off`, or the row at the bottom of that section, hides it again). From there:
 
-- **Campaign start & step goal**
+- **Season start & step goal**
 - **Add a player** for someone who hasn't joined, with an optional back-dated first weigh-in
-- **Update step totals**: enter a player's total steps since the campaign start, up to a date (also
+- **Update step totals**: enter a player's total steps since the season start, up to a date (also
   available to each player from **Log steps → Enter a running total instead**). Whatever their
   logged days don't account for is spread evenly over the unlogged days in that period, so weekly
   totals, averages and today's race keep working. Each full goal's worth of spread steps counts as
@@ -115,10 +99,10 @@ device (`?admin=off`, or the row at the bottom of that section, hides it again).
 
 It's an honour-system unlock, like the PINs: anyone who knows the link could use it.
 
-### Campaigns
+### Seasons
 
-Only entries on or after the campaign start date count, and each person's baseline is
-their first weigh-in on or after it. To start a new campaign, move the start date
+Only entries on or after the season start date count, and each person's baseline is
+their first weigh-in on or after it. To start a new season, move the start date
 forward. Old entries are kept.
 
 ## Data model (Firestore)
@@ -129,7 +113,7 @@ groups/belly-must-go               { name, stepGoal, startDate }
   weighins/{playerId}_{YYYY-MM-DD} { pid, date, kg, ts }      // one per player per day
   sessions/{playerId}_{date}_{rnd} { pid, date, text, ts }    // training, any number per day
   steps/{playerId}_{YYYY-MM-DD}    { pid, date, steps, ts }   // latest number wins
-  stepTotals/{playerId}_{date}     { pid, date, total, ts }   // running total since campaign start
+  stepTotals/{playerId}_{date}     { pid, date, total, ts }   // running total since season start
 ```
 
 Weights are always stored in kg; kg / st & lb / lb is a per-device display setting.
