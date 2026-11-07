@@ -16,15 +16,13 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..600;1,6..96,400..500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   /* ==================================================================
      THEME — quiet luxury. Ivory paper, ink, racing green, champagne gold.
-     Bodoni Moda for display and figures, Jost for everything else.
+     One typeface (Jost); hierarchy comes from size and weight.
      Follows the phone's light / dark setting.
      ================================================================== */
-  /* Bodoni draws the minus as a hairline; take signs from a sturdier system face. */
-  @font-face{ font-family: "Sign"; src: local("Helvetica Neue"), local("HelveticaNeue"), local("Helvetica"), local("Arial"), local("Roboto"), local("DejaVu Sans"); unicode-range: U+2212, U+002B, U+00B1; }
   :root{
     color-scheme: light;
     --bg: #f6f2ea;
@@ -54,7 +52,6 @@
     --series-2: #a8742a;        /* comparison: old gold */
     --series-muted: rgba(23, 21, 15, 0.16);
 
-    --f-display: 'Sign', 'Bodoni Moda', 'Didot', 'Bodoni 72', Georgia, serif;
     --f-body: 'Jost', 'Futura', 'Avenir Next', system-ui, sans-serif;
 
     --radius: 14px;
@@ -103,7 +100,7 @@
     padding-bottom: calc(var(--tabbar-h) + var(--safe-b) + 28px);
     overflow-x: hidden;
   }
-  h1,h2,h3{ font-family: var(--f-display); margin: 0; font-weight: 500; letter-spacing: -0.005em; }
+  h1,h2,h3{ font-family: var(--f-body); margin: 0; font-weight: 400; letter-spacing: -0.01em; }
   button{ font: inherit; color: inherit; }
   .num{ font-variant-numeric: lining-nums tabular-nums; }
   :focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -113,7 +110,7 @@
   /* ---------- masthead ---------- */
   .topbar{ display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: calc(18px + var(--safe-t)) 0 6px; }
   .brand{ display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .brand .mono{ width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--gold); display: grid; place-items: center; font-family: var(--f-display); font-size: 0.95rem; font-weight: 500; color: var(--accent); flex-shrink: 0; letter-spacing: 0; }
+  .brand .mono{ width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--gold); display: grid; place-items: center; font-size: 0.95rem; font-weight: 400; color: var(--accent); flex-shrink: 0; letter-spacing: 0; }
   .brand h1{ font-size: 1.02rem; font-weight: 500; letter-spacing: 0.32em; text-transform: uppercase; white-space: nowrap; line-height: 1; }
   .brand small{ display: block; font-size: 0.66rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-faint); margin-top: 6px; }
   .pill{ display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); font-size: 0.72rem; color: var(--text-dim); white-space: nowrap; letter-spacing: 0.04em; }
@@ -124,10 +121,10 @@
 
   .greeting{ padding: 26px 0 8px; }
   .greeting .eyebrow{ margin-bottom: 10px; }
-  .greeting h2{ font-size: 2.3rem; line-height: 1.08; font-weight: 400; }
-  .greeting h2 em{ font-style: italic; }
+  .greeting h2{ font-size: 2.1rem; line-height: 1.12; font-weight: 300; }
+  .greeting h2 em{ font-style: normal; font-weight: 400; }
   .quote{ margin: 14px 0 22px; padding-left: 14px; border-left: 1px solid var(--gold); }
-  .quote q{ display: block; font-family: var(--f-display); font-style: italic; font-size: 1.05rem; line-height: 1.4; color: var(--text-dim); quotes: "“" "”"; }
+  .quote q{ display: block; font-size: 1rem; line-height: 1.4; color: var(--text-dim); quotes: "“" "”"; }
   .quote cite{ display: block; margin-top: 6px; font-style: normal; font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-faint); }
 
   /* ---------- cards ---------- */
@@ -145,15 +142,15 @@
   .strip{ display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin: 0 0 18px; }
   .strip div{ padding: 12px 4px; text-align: center; }
   .strip div + div{ border-left: 1px solid var(--border); }
-  .strip b{ display: block; font-family: var(--f-display); font-size: 1.45rem; font-weight: 500; line-height: 1.1; }
+  .strip b{ display: block; font-size: 1.4rem; font-weight: 300; line-height: 1.1; }
   .strip span{ font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-faint); }
 
   /* position card */
   .pos-top{ display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
-  .pos-big{ font-family: var(--f-display); font-size: 3.2rem; line-height: 0.95; font-weight: 400; }
+  .pos-big{ font-size: 3.1rem; line-height: 1; font-weight: 300; letter-spacing: -0.02em; }
   .pos-sub{ color: var(--text-dim); font-size: 0.86rem; margin-top: 6px; }
   .pos-rank{ text-align: right; }
-  .pos-rank b{ display: block; font-family: var(--f-display); font-size: 1.9rem; font-weight: 500; line-height: 1; }
+  .pos-rank b{ display: block; font-size: 1.8rem; font-weight: 300; line-height: 1; }
   .pos-rank span{ font-size: 0.72rem; color: var(--text-faint); }
   .kv{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 18px; border-top: 1px solid var(--border); }
   .kv div{ padding: 12px 0 0; }
@@ -174,26 +171,26 @@
 
   .line-stat{ margin-top: 16px; }
   .line-stat .top{ display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-dim); margin-bottom: 7px; }
-  .nudge{ margin-top: 16px; font-family: var(--f-display); font-style: italic; font-size: 1rem; color: var(--text-dim); line-height: 1.4; }
-  .nudge b{ font-style: normal; color: var(--text); font-weight: 600; }
+  .nudge{ margin-top: 16px; font-size: 0.92rem; color: var(--text-dim); line-height: 1.4; }
+  .nudge b{ color: var(--text); font-weight: 500; }
   .forge{ margin-top: 12px; font-size: 0.8rem; color: var(--text-dim); }
   .forge .bar{ margin-top: 6px; }
 
   /* people */
-  .av{ width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-family: var(--f-display); font-weight: 500; font-size: 0.98rem; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); letter-spacing: 0.02em; }
+  .av{ width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center; font-weight: 500; font-size: 0.98rem; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); letter-spacing: 0.02em; }
   .av.lg{ width: 56px; height: 56px; font-size: 1.35rem; }
   .av.sm{ width: 32px; height: 32px; font-size: 0.82rem; }
-  .av.mark{ color: var(--good); font-family: var(--f-body); font-size: 0.85rem; }
+  .av.mark{ color: var(--good); font-size: 0.85rem; }
   .me-top{ display: flex; align-items: center; gap: 14px; }
-  .me-name{ font-family: var(--f-display); font-weight: 500; font-size: 1.6rem; line-height: 1.05; }
+  .me-name{ font-weight: 400; font-size: 1.5rem; line-height: 1.05; }
   .me-sub{ color: var(--text-dim); font-size: 0.82rem; margin-top: 3px; }
-  .big-pct{ font-family: var(--f-display); font-weight: 500; font-size: 2rem; line-height: 1; }
+  .big-pct{ font-weight: 300; font-size: 2rem; line-height: 1; }
   .badge{ display: inline-block; font-size: 0.64rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--gold); color: var(--gold); }
   .badge.none{ border-color: var(--border-strong); color: var(--text-faint); }
   .stat-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 16px; border-top: 1px solid var(--border); }
   .stat{ padding: 12px 10px 10px 0; min-width: 0; border-bottom: 1px solid var(--border); }
   .stat:not(:nth-child(3n+1)){ padding-left: 10px; border-left: 1px solid var(--border); }
-  .stat b{ display: block; font-family: var(--f-display); font-size: 1.3rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat b{ display: block; font-size: 1.2rem; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .stat span{ font-size: 0.7rem; color: var(--text-faint); }
 
   .btn-row{ display: flex; gap: 8px; margin-top: 18px; }
@@ -217,7 +214,7 @@
   .award + .award, div.award:nth-child(2){ padding-left: 14px; border-left: 1px solid var(--border); }
   .award .t{ font-size: 0.64rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-faint); }
   .award.win .t{ color: var(--gold); }
-  .award .n{ font-family: var(--f-display); font-size: 1.35rem; font-weight: 500; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .award .n{ font-size: 1.2rem; font-weight: 400; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .award .v{ font-size: 0.84rem; margin-top: 2px; }
 
   /* tables / standings */
@@ -226,7 +223,7 @@
   .rows > .row:first-child{ border-top: 0; }
   .row.me{ background: var(--accent-dim); border-radius: 10px; padding-left: 8px; padding-right: 8px; border-top-color: transparent; }
   .row.me + .row{ border-top-color: transparent; }
-  .row .rk{ font-family: var(--f-display); font-weight: 500; font-size: 1.25rem; text-align: center; color: var(--text-faint); }
+  .row .rk{ font-weight: 300; font-size: 1.15rem; text-align: center; color: var(--text-faint); }
   .row .rk.r1{ color: var(--gold); }
   .row .av{ width: 36px; height: 36px; font-size: 0.86rem; }
   .row .who{ min-width: 0; }
@@ -234,7 +231,7 @@
   .row .sub{ display: block; font-size: 0.76rem; color: var(--text-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row .sub .bar{ margin-top: 7px; }
   .row .val{ text-align: right; white-space: nowrap; }
-  .row .val b{ display: block; font-family: var(--f-display); font-weight: 500; font-size: 1.3rem; line-height: 1.1; }
+  .row .val b{ display: block; font-weight: 400; font-size: 1.15rem; line-height: 1.1; }
   .row .val small{ font-size: 0.74rem; color: var(--text-faint); }
   .mv{ font-size: 0.66rem; font-weight: 500; }
   .mv.up{ color: var(--good); } .mv.down{ color: var(--bad); } .mv.new{ color: var(--text-faint); }
@@ -283,7 +280,7 @@
   .tip .r{ display: grid; grid-template-columns: 12px 1fr auto; gap: 6px; align-items: center; line-height: 1.6; }
   .tip .r i{ display: block; height: 2px; border-radius: 2px; }
   .tip .r span{ color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tip .r b{ font-weight: 600; }
+  .tip .r b{ font-weight: 500; }
   .legend{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
   .legend button{ display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px; cursor: pointer; background: transparent; border: 1px solid var(--border); font-size: 0.78rem; color: var(--text-dim); }
   .legend button i{ width: 14px; height: 2px; border-radius: 2px; background: var(--series-muted); }
@@ -326,7 +323,7 @@
   @media (min-width: 640px){ dialog.sheet{ margin: auto; border-radius: 20px; border: 1px solid var(--border); } }
   .sheet-in{ padding: 10px 20px calc(24px + var(--safe-b)); overflow-y: auto; max-height: 92vh; }
   .grab{ width: 38px; height: 4px; border-radius: 4px; background: var(--border-strong); margin: 0 auto 16px; }
-  .sheet-in h2{ font-size: 1.85rem; font-weight: 500; margin-bottom: 6px; line-height: 1.1; }
+  .sheet-in h2{ font-size: 1.7rem; font-weight: 400; margin-bottom: 6px; line-height: 1.1; }
   .sheet-in .lead{ color: var(--text-dim); font-size: 0.9rem; margin: 0 0 18px; }
 
   /* forms */
@@ -346,7 +343,7 @@
     font: inherit; font-size: 16px; outline: none;
   }
   input:focus, select:focus{ border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
-  input.big{ font-family: var(--f-display); font-size: 2.3rem; font-weight: 500; text-align: center; min-height: 68px; }
+  input.big{ font-size: 2.1rem; font-weight: 300; text-align: center; min-height: 68px; }
   .unit-in{ position: relative; flex: 1; }
   .unit-in em{ position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-style: normal; pointer-events: none; }
   .two{ display: flex; gap: 8px; }
@@ -360,21 +357,21 @@
   .who-btn{ display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; background: transparent; border: 1px solid var(--border); cursor: pointer; text-align: left; width: 100%; font-weight: 500; }
   .who-btn small{ margin-left: auto; color: var(--text-faint); font-weight: 400; }
   .choice{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .choice button{ padding: 24px 12px; border-radius: 14px; background: transparent; border: 1px solid var(--border-strong); cursor: pointer; font-family: var(--f-display); font-weight: 500; font-size: 1.45rem; }
-  .choice button span{ display: block; font-family: var(--f-body); font-size: 0.74rem; color: var(--text-faint); margin-top: 4px; }
+  .choice button{ padding: 24px 12px; border-radius: 14px; background: transparent; border: 1px solid var(--border-strong); cursor: pointer; font-weight: 400; font-size: 1.3rem; }
+  .choice button span{ display: block; font-size: 0.74rem; color: var(--text-faint); margin-top: 4px; }
   .kinds{ display: flex; flex-wrap: wrap; gap: 6px; }
   .kinds .chip{ padding: 6px 13px; font-size: 0.82rem; }
   .err{ color: var(--bad); font-size: 0.82rem; margin: -4px 0 12px; min-height: 1em; }
   .rules{ margin: 0; padding: 0; list-style: none; }
   .rules li{ display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-top: 1px solid var(--border); font-size: 0.92rem; }
   .rules li:first-child{ border-top: 0; }
-  .rules li b{ color: var(--text); white-space: nowrap; font-family: var(--f-display); font-weight: 500; font-size: 1.15rem; }
+  .rules li b{ color: var(--text); white-space: nowrap; font-weight: 400; font-size: 1.05rem; }
 
   .toast{ position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + var(--safe-b) + 18px); z-index: 60; transform: translate(-50%, 16px); opacity: 0; pointer-events: none; background: var(--text); color: var(--bg); padding: 10px 18px; border-radius: 999px; font-size: 0.88rem; max-width: calc(100vw - 32px); text-align: center; transition: opacity .2s, transform .2s; }
   .toast.on{ opacity: 1; transform: translate(-50%, 0); }
-  .loading{ display: grid; place-items: center; padding: 90px 0; color: var(--text-faint); font-family: var(--f-display); font-style: italic; font-size: 1.15rem; }
+  .loading{ display: grid; place-items: center; padding: 90px 0; color: var(--text-faint); font-size: 1rem; }
   .footer{ text-align: center; color: var(--text-faint); font-size: 0.72rem; letter-spacing: 0.08em; margin-top: 26px; line-height: 1.8; }
-  .footer em{ font-family: var(--f-display); font-size: 1rem; letter-spacing: 0; color: var(--text-dim); }
+  .footer em{ font-style: normal; color: var(--text-dim); }
 
   @media (max-width: 380px){ .greeting h2{ font-size: 2rem; } .pos-big{ font-size: 2.7rem; } }
   @media (prefers-reduced-motion: reduce){ *{ animation: none !important; transition: none !important; } }
@@ -984,7 +981,7 @@ function renderMyCard(C) {
     <div class="kv">
       <div><b class="num">${x.points}</b><span>Score</span></div>
       <div><b class="num ${tone(x.week?.pct)}">${fmtPct(x.week?.pct)}</b><span>This week</span></div>
-      <div><b class="num">${x.trainWeek}</b><span>Sessions this week</span></div>
+      <div><b class="num">${x.trainWeek}</b><span>Sessions</span></div>
     </div>
     <div class="line-stat"><div class="top"><span>Steps today</span><span class="num">${x.stepsToday == null ? "—" : fmtInt(x.stepsToday)} / ${fmtInt(goal)}</span></div>
       <div class="bar ${stepsPct >= 100 ? "hit" : ""}"><i style="width:${stepsPct}%"></i></div></div>
@@ -1800,7 +1797,7 @@ function openPointsInfo() {
       <li><span>Best week (largest % drop)</span><b>+${POINTS.perWeeklyWin}</b></li>
     </ul>
     <div class="card-h" style="margin:22px 0 6px"><h2>Milestones</h2><span class="meta">% of starting weight lost</span></div>
-    <p style="margin:0;font-family:var(--f-display);font-size:1.25rem">${MILESTONES.map(m => `${m}%`).join(" · ")}</p>
+    <p style="margin:0;font-size:1.1rem;font-weight:300">${MILESTONES.map(m => `${m}%`).join(" · ")}</p>
     <p class="faint" style="font-size:.84rem;margin-top:16px">Weeks run Monday to Sunday. A week's change is your last weigh-in that week against your last one before it. Arrows on the standings show movement over the last seven days.</p>
     <div class="btn-row"><button class="btn" data-act="close">Close</button></div>`);
 }

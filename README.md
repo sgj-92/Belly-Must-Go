@@ -4,8 +4,8 @@ Weigh-ins, steps and standings for the padel group. Everyone logs their own weig
 training; the app keeps a quiet, well-made record of who is doing what.
 
 **The look:** quiet luxury, like a members' club or a fine watch brand. Ivory paper and ink, one
-racing-green accent and a champagne-gold hairline; Bodoni Moda for headings and figures, Jost for
-everything else; engraved initials instead of avatars. It follows the phone's light / dark setting.
+racing-green accent and a champagne-gold hairline; a single typeface (Jost) throughout, with
+hierarchy from size and weight; engraved initials instead of avatars. It follows the phone's light / dark setting.
 
 Add `?demo` to the URL (e.g. `https://bmg.sgj.luxe/?demo`) to preview with sample players
 without touching the live data.
